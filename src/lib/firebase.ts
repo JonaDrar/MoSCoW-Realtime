@@ -13,9 +13,25 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const db = getFirestore(app);
-const auth = getAuth(app);
+// Check if Firebase config keys are present
+if (!firebaseConfig.apiKey) {
+  console.error("Firebase API Key is missing. Please check your .env.local file and ensure NEXT_PUBLIC_FIREBASE_API_KEY is set.");
+}
+// You could add similar checks for other essential keys like projectId if needed
+
+let app;
+let db;
+let auth;
+
+try {
+  app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+  db = getFirestore(app);
+  auth = getAuth(app);
+} catch (error) {
+  console.error("Error initializing Firebase:", error);
+  // Optionally, provide more user-friendly feedback or prevent app initialization
+  // For example, you might want to throw the error or set a flag indicating Firebase isn't available.
+}
 
 
 export { app, db, auth };
