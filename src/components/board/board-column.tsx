@@ -33,19 +33,19 @@ const DragItem = React.memo(({ functionality, index, onInitiateMove }: DragItemP
       {(provided, snapshot) => {
         // console.log(`Draggable ${functionality.id}: isDragging=${snapshot.isDragging}`); // Optional: Log dragging state
         return (
+          // Use a div as the direct child for drag handle props
           <div
             ref={provided.innerRef}
             {...provided.draggableProps}
-            {...provided.dragHandleProps} // Ensure drag handle is applied to this div
+            {...provided.dragHandleProps} // Apply drag handle here
             className={cn(
                 'mb-4 transition-shadow duration-200 outline-none focus:outline-none', // Ensure no outline interferes, explicit focus removal
                  snapshot.isDragging ? 'shadow-xl ring-2 ring-ring' : 'shadow-md' // Apply shadow normally, enhance on drag
             )}
              style={{
               ...provided.draggableProps.style, // Apply styles from react-beautiful-dnd
-              // userSelect: 'none', // Force prevent text selection if needed, but dragHandleProps should suffice
+              userSelect: 'none', // Prevent text selection during drag
             }}
-            // onClick={(e) => e.stopPropagation()} // Prevent clicks bubbling up if necessary
           >
             <FunctionalityCard
               functionality={functionality}
@@ -65,9 +65,10 @@ DragItem.displayName = 'DragItem'; // Add display name for React DevTools
 export default function BoardColumn({ title, priority, functionalities, onAddCard, onMoveCard }: BoardColumnProps) {
 
   return (
+    // Add h-full to ensure the card takes the full height of its grid cell
     <Card className={`flex flex-col h-full border-2 ${columnStyles[priority]} bg-card shadow-sm overflow-hidden`}>
-       {/* Header */}
-       <CardHeader className="flex flex-row items-center justify-between p-4 border-b sticky top-0 bg-card z-10">
+       {/* Header - sticky top-0 makes it stick within the card, z-10 keeps it above content */}
+       <CardHeader className="flex flex-row items-center justify-between p-4 border-b sticky top-0 bg-card z-10 flex-shrink-0"> {/* Added flex-shrink-0 */}
          <CardTitle className="text-lg font-semibold text-card-foreground">{title}</CardTitle>
          <Button variant="ghost" size="icon" onClick={() => onAddCard(priority)} className="text-accent hover:text-accent-foreground hover:bg-accent/10 rounded-full">
            <Plus className="h-5 w-5" />
@@ -80,21 +81,23 @@ export default function BoardColumn({ title, priority, functionalities, onAddCar
        <Droppable
             droppableId={priority}
             type="FUNCTIONALITY"
-            isDropDisabled={false}
-            isCombineEnabled={false}
-            ignoreContainerClipping={false}
+            isDropDisabled={false} // Explicitly boolean
+            isCombineEnabled={false} // Explicitly boolean
+            ignoreContainerClipping={false} // Explicitly boolean
         >
          {(provided, snapshot) => {
             // console.log(`Droppable ${priority}: isDraggingOver=${snapshot.isDraggingOver}`); // Optional: Log droppable state
            return (
+             // ScrollArea should grow to fill remaining space
              <ScrollArea
-               className="flex-grow"
+               className="flex-grow" // Use flex-grow to fill available space
                style={{ backgroundColor: snapshot.isDraggingOver ? 'hsla(var(--accent)/0.1)' : 'transparent' }} // Highlight on drag over
              >
+               {/* Apply provided props to the content container */}
                <CardContent
                  ref={provided.innerRef}
                  {...provided.droppableProps}
-                 className="p-4 space-y-0 h-full min-h-[100px]" // Remove default space-y, ensure min height
+                 className="p-4 h-full min-h-[100px]" // Remove space-y, ensure padding and min height
                >
                  {functionalities.length === 0 && !snapshot.isDraggingOver && (
                    <p className="text-sm text-muted-foreground text-center py-4">

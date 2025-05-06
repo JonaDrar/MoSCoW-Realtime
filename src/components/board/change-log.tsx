@@ -46,11 +46,11 @@ function renderChangeDescription(log: ChangeLogEntry) {
           </Badge>
           .
            {/* Optionally show initial justification for creation */}
-           {/* {log.justification && (
-            <p className="text-xs text-foreground/80 mt-1 ml-6">
+           {log.justification && (
+            <p className="text-xs text-foreground/80 mt-1 ml-6 w-full"> {/* Ensure justification takes full width */}
               Reason: {log.justification}
             </p>
-          )} */}
+          )}
         </>
       );
     case 'moved':
@@ -67,7 +67,7 @@ function renderChangeDescription(log: ChangeLogEntry) {
           </Badge>
           .
           {log.justification && (
-            <p className="text-xs text-foreground/80 mt-1 ml-6"> {/* More visible, not italic */}
+            <p className="text-xs text-foreground/80 mt-1 ml-6 w-full"> {/* Ensure justification takes full width */}
               Reason: {log.justification}
             </p>
           )}
@@ -79,7 +79,7 @@ function renderChangeDescription(log: ChangeLogEntry) {
           <Pencil className="h-4 w-4 text-orange-600 mr-1.5 flex-shrink-0" />
           <span className="font-medium mr-1">{log.username}</span> edited {cardTextShort}.
           {log.justification && (
-             <p className="text-xs text-foreground/80 mt-1 ml-6"> {/* Consistent styling */}
+             <p className="text-xs text-foreground/80 mt-1 ml-6 w-full"> {/* Consistent styling & width */}
                Details: {log.justification}
             </p>
            )}
@@ -91,7 +91,7 @@ function renderChangeDescription(log: ChangeLogEntry) {
          <>
             <span className="font-medium mr-1">{log.username}</span> made an unknown change to {cardTextShort}.
             {log.justification && (
-              <p className="text-xs text-foreground/80 mt-1 ml-6">
+              <p className="text-xs text-foreground/80 mt-1 ml-6 w-full"> {/* Ensure justification takes full width */}
                 Justification: {log.justification}
               </p>
             )}
@@ -108,7 +108,8 @@ interface ChangeLogProps {
 
 export default function ChangeLog({ logs, loading }: ChangeLogProps) {
   return (
-    <ScrollArea className="flex-grow">
+    // Apply flex-grow to the ScrollArea itself
+    <ScrollArea className="flex-grow h-full"> {/* Added h-full */}
       <div className="p-4 space-y-4">
         {loading && ( // Display skeletons if loading
           <>
@@ -125,7 +126,8 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
         )}
         {!loading && logs.map((log) => ( // Display logs if not loading
           <div key={log.id} className="pb-3 border-b border-border last:border-b-0">
-            <div className="flex items-start text-sm text-foreground mb-1 flex-wrap"> {/* Allow wrapping */}
+            {/* Allow wrapping for the main log line */}
+            <div className="flex items-start text-sm text-foreground mb-1 flex-wrap">
                 {renderChangeDescription(log)}
             </div>
             <p className="text-xs text-muted-foreground ml-6">

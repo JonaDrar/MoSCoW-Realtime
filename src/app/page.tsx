@@ -344,12 +344,15 @@ export default function Home() {
   };
 
 return (
-  <div className="flex h-screen bg-muted/40">
+  // Ensure outer div takes full height
+  <div className="flex flex-col md:flex-row h-screen bg-muted/40">
+    {/* Main content area */}
     <main className="flex-1 flex flex-col p-4 md:p-6 lg:p-8 overflow-hidden">
-       <header className="mb-4 md:mb-6">
+       {/* Header */}
+       <header className="mb-4 md:mb-6 flex-shrink-0"> {/* Ensure header doesn't grow */}
            <h1 className="text-3xl md:text-4xl font-bold text-gradient">MoSCoW Realtime</h1>
            {user && username && (
-             <p className="text-muted-foreground mt-1">Welcome, {username}! Prioritize features collaboratively.</p>
+             <p className="text-muted-foreground mt-1 text-sm md:text-base">Welcome, {username}! Prioritize features collaboratively.</p>
            )}
        </header>
 
@@ -360,12 +363,12 @@ return (
           </div>
         )}
 
-        {/* Show Loading Skeletons OR Board Columns */}
-       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 flex-grow overflow-hidden">
+        {/* Board Columns Container - Use flex-grow and min-h-0 */}
+       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 flex-grow overflow-hidden min-h-0"> {/* Added min-h-0 */}
           {loading ? (
               // Skeleton Loading State
               priorities.map((p) => (
-                <Card key={p} className="flex flex-col bg-card shadow-sm">
+                <Card key={p} className="flex flex-col bg-card shadow-sm min-h-[300px]"> {/* Added min-h for skeletons */}
                   <CardHeader className="p-4 border-b flex flex-row justify-between items-center">
                     <Skeleton className="h-6 w-3/4" />
                     <Skeleton className="h-8 w-8 rounded-full" />
@@ -398,10 +401,12 @@ return (
         </div>
     </main>
 
-    {/* Sidebar for Change Log - Only render if user is logged in */}
+    {/* Sidebar for Change Log - Adjusted width and behavior */}
      {user && (
-        <aside className="w-64 md:w-72 border-l bg-card p-0 hidden lg:flex flex-col">
-             <h2 className="text-lg font-semibold p-4 border-b text-card-foreground">Change Log</h2>
+        // Use flex-shrink-0 to prevent shrinking, adjust width, hide on medium and smaller screens
+        <aside className="w-full md:w-64 lg:w-72 border-t md:border-t-0 md:border-l bg-card p-0 flex-shrink-0 flex flex-col h-48 md:h-auto">
+             <h2 className="text-lg font-semibold p-4 border-b text-card-foreground hidden md:block">Change Log</h2>
+             {/* Give ChangeLog a flex-grow property to fill the sidebar height */}
              <ChangeLog logs={changeLog} loading={logLoading} />
         </aside>
      )}
