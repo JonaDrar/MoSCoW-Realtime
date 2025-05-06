@@ -45,6 +45,12 @@ function renderChangeDescription(log: ChangeLogEntry) {
             {priorityLabels[log.toPriority!]}
           </Badge>
           .
+           {/* Optionally show initial justification for creation */}
+           {/* {log.justification && (
+            <p className="text-xs text-foreground/80 mt-1 ml-6">
+              Reason: {log.justification}
+            </p>
+          )} */}
         </>
       );
     case 'moved':
@@ -61,7 +67,7 @@ function renderChangeDescription(log: ChangeLogEntry) {
           </Badge>
           .
           {log.justification && (
-            <p className="text-xs text-muted-foreground mt-1 ml-6 italic">
+            <p className="text-xs text-foreground/80 mt-1 ml-6"> {/* More visible, not italic */}
               Reason: {log.justification}
             </p>
           )}
@@ -73,14 +79,24 @@ function renderChangeDescription(log: ChangeLogEntry) {
           <Pencil className="h-4 w-4 text-orange-600 mr-1.5 flex-shrink-0" />
           <span className="font-medium mr-1">{log.username}</span> edited {cardTextShort}.
           {log.justification && (
-             <p className="text-xs text-muted-foreground mt-1 ml-6 italic">
+             <p className="text-xs text-foreground/80 mt-1 ml-6"> {/* Consistent styling */}
                Details: {log.justification}
             </p>
            )}
          </>
        );
     default:
-      return `Unknown change by ${log.username} on ${cardTextShort}`;
+      // Ensure unknown changes still show potential justification
+       return (
+         <>
+            <span className="font-medium mr-1">{log.username}</span> made an unknown change to {cardTextShort}.
+            {log.justification && (
+              <p className="text-xs text-foreground/80 mt-1 ml-6">
+                Justification: {log.justification}
+              </p>
+            )}
+         </>
+       );
   }
 }
 
@@ -109,7 +125,7 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
         )}
         {!loading && logs.map((log) => ( // Display logs if not loading
           <div key={log.id} className="pb-3 border-b border-border last:border-b-0">
-            <div className="flex items-start text-sm text-foreground mb-1">
+            <div className="flex items-start text-sm text-foreground mb-1 flex-wrap"> {/* Allow wrapping */}
                 {renderChangeDescription(log)}
             </div>
             <p className="text-xs text-muted-foreground ml-6">
@@ -124,16 +140,20 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
 
 // Add some basic badge styling (optional, could be in globals.css)
 const badgeStyles = `
-.priority-badge-must { background-color: hsl(var(--moscow-must-bg)); color: hsl(var(--moscow-must-fg)); border-color: hsl(var(--moscow-must-border)); }
-.priority-badge-should { background-color: hsl(var(--moscow-should-bg)); color: hsl(var(--moscow-should-fg)); border-color: hsl(var(--moscow-should-border)); }
-.priority-badge-could { background-color: hsl(var(--moscow-could-bg)); color: hsl(var(--moscow-could-fg)); border-color: hsl(var(--moscow-could-border)); }
-.priority-badge-wont { background-color: hsl(var(--moscow-wont-bg)); color: hsl(var(--moscow-wont-fg)); border-color: hsl(var(--moscow-wont-border)); }
+.priority-badge-must { background-color: hsl(var(--moscow-must-bg)); color: hsl(var(--moscow-must-fg)); border: 1px solid hsl(var(--moscow-must-border)); }
+.priority-badge-should { background-color: hsl(var(--moscow-should-bg)); color: hsl(var(--moscow-should-fg)); border: 1px solid hsl(var(--moscow-should-border)); }
+.priority-badge-could { background-color: hsl(var(--moscow-could-bg)); color: hsl(var(--moscow-could-fg)); border: 1px solid hsl(var(--moscow-could-border)); }
+.priority-badge-wont { background-color: hsl(var(--moscow-wont-bg)); color: hsl(var(--moscow-wont-fg)); border: 1px solid hsl(var(--moscow-wont-border)); }
 `;
 
 // Inject styles (consider a better approach for larger apps)
 if (typeof window !== 'undefined') {
-  const styleSheet = document.createElement("style");
-  styleSheet.type = "text/css";
-  styleSheet.innerText = badgeStyles;
-  document.head.appendChild(styleSheet);
+  const styleId = 'priority-badge-styles';
+  if (!document.getElementById(styleId)) {
+      const styleSheet = document.createElement("style");
+      styleSheet.id = styleId;
+      styleSheet.type = "text/css";
+      styleSheet.innerText = badgeStyles;
+      document.head.appendChild(styleSheet);
+  }
 }
