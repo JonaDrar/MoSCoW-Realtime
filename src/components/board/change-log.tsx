@@ -59,21 +59,21 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
     ) : null;
 
     // Define components to pass to t.rich. Keys MUST match the tags in the translation JSON.
-    // Ensure the components render the desired output (e.g., wrap username in a span).
     // Pass simple JSX elements instead of complex components for badges.
+    // Add unique keys to satisfy React's requirement for lists.
     const components = {
-      username: <span className="font-medium">{log.username}</span>,
-      cardTextShort: <span className="italic">"{cardTextShort}"</span>,
+      username: <span key={`log-${log.id}-username`} className="font-medium">{log.username}</span>,
+      cardTextShort: <span key={`log-${log.id}-cardtext`} className="italic">"{cardTextShort}"</span>,
       fromPriority: log.fromPriority ? (
-        <Badge variant="secondary" className={`mx-1 priority-badge-${log.fromPriority}`}>
+        <Badge key={`log-${log.id}-from`} variant="secondary" className={`mx-1 priority-badge-${log.fromPriority}`}>
           {priorityLabels[log.fromPriority]}
         </Badge>
-      ) : <></>,
+      ) : <React.Fragment key={`log-${log.id}-from-empty`}></React.Fragment>, // Add key even for empty fragment
       toPriority: log.toPriority ? (
-        <Badge variant="secondary" className={`mx-1 priority-badge-${log.toPriority}`}>
+        <Badge key={`log-${log.id}-to`} variant="secondary" className={`mx-1 priority-badge-${log.toPriority}`}>
           {priorityLabels[log.toPriority]}
         </Badge>
-      ) : <></>,
+      ) : <React.Fragment key={`log-${log.id}-to-empty`}></React.Fragment>, // Add key even for empty fragment
     };
 
 
