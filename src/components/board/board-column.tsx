@@ -36,7 +36,7 @@ const DragItem = React.memo(({ functionality, index, onInitiateMove }: DragItemP
             {...provided.draggableProps}
             {...provided.dragHandleProps} // These props make this div the drag handle
             className={cn(
-                'mb-4 transition-shadow duration-200 select-none', // Added select-none
+                'mb-4 transition-shadow duration-200', // Removed select-none
                  snapshot.isDragging ? 'shadow-xl ring-2 ring-ring' : ''
             )}
              style={{
@@ -79,7 +79,7 @@ export default function BoardColumn({ title, priority, functionalities, onAddCar
             type="FUNCTIONALITY"
             isDropDisabled={false}
             isCombineEnabled={false}
-            ignoreContainerClipping={false} // Add missing prop
+            ignoreContainerClipping={false} // Ensure all required props are boolean
         >
          {(provided, snapshot) => {
            return (
