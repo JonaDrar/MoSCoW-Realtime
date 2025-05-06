@@ -48,9 +48,9 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
 
     // Custom Badge component for use with t.rich
     // Make sure the key matches the tag in the translation string (e.g., <toPriority/> matches toPriority key)
-    const PriorityBadge = ({ children, priority }: { children?: React.ReactNode, priority: Priority }) => (
+    const PriorityBadge = ({ priority }: { priority: Priority }) => (
       <Badge variant="secondary" className={`mx-1 priority-badge-${priority}`}>
-        {children || priorityLabels[priority]}
+        {priorityLabels[priority]}
       </Badge>
     );
     PriorityBadge.displayName = 'PriorityBadge'; // Optional: Helps with debugging
@@ -71,9 +71,10 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
     // Define components to pass to t.rich. Keys MUST match the tags in the translation JSON.
     // Ensure the components render the desired output (e.g., wrap username in a span).
     const components = {
+      // Use simple elements for rendering text content
       username: <span className="font-medium">{log.username}</span>,
       cardTextShort: <span className="italic">"{cardTextShort}"</span>,
-      // Pass the component directly, t.rich will render it
+      // Pass the PriorityBadge component directly, ensuring the keys match the tags in the JSON
       fromPriority: log.fromPriority ? <PriorityBadge priority={log.fromPriority} /> : <></>,
       toPriority: log.toPriority ? <PriorityBadge priority={log.toPriority} /> : <></>,
     };
@@ -82,6 +83,7 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
 
     switch (log.changeType) {
       case 'created':
+        // Ensure the key 'createdLog' and tags match the JSON exactly
         messageElement = t.rich('createdLog', components);
         return (
           <>
@@ -91,6 +93,7 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
           </>
         );
       case 'moved':
+         // Ensure the key 'movedLog' and tags match the JSON exactly
          messageElement = t.rich('movedLog', components);
         return (
             <>
@@ -100,6 +103,7 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
             </>
           );
       case 'edited':
+         // Ensure the key 'editedLog' and tags match the JSON exactly
          messageElement = t.rich('editedLog', components);
         return (
             <>
@@ -113,6 +117,7 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
              </>
            );
       default:
+        // Ensure the key 'unknownLog' and tags match the JSON exactly
         messageElement = t.rich('unknownLog', components);
         return (
            <>
