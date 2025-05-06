@@ -69,8 +69,14 @@ export default function BoardColumn({ title, priority, functionalities, onAddCar
        </CardHeader>
 
        {/* Droppable Area */}
-       {/* Explicitly set isDropDisabled and isCombineEnabled to false to satisfy invariant checks */}
-       <Droppable droppableId={priority} type="FUNCTIONALITY" isDropDisabled={false} isCombineEnabled={false}>
+       {/* Explicitly set isDropDisabled, isCombineEnabled, and ignoreContainerClipping to false to satisfy invariant checks */}
+       <Droppable
+            droppableId={priority}
+            type="FUNCTIONALITY"
+            isDropDisabled={false}
+            isCombineEnabled={false}
+            ignoreContainerClipping={false} // Add missing prop
+        >
          {(provided, snapshot) => {
            return (
              <ScrollArea
