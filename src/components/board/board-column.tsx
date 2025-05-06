@@ -69,7 +69,8 @@ export default function BoardColumn({ title, priority, functionalities, onAddCar
        </CardHeader>
 
        {/* Droppable Area */}
-       <Droppable droppableId={priority} type="FUNCTIONALITY">
+       {/* Explicitly set isDropDisabled to false to satisfy invariant check */}
+       <Droppable droppableId={priority} type="FUNCTIONALITY" isDropDisabled={false}>
          {(provided, snapshot) => {
            return (
              <ScrollArea
