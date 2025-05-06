@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
-import { GeistSans } from 'geist/font/sans';
-import { GeistMono } from 'geist/font/mono';
+// Removed GeistSans and GeistMono imports
 import '../globals.css'; // Adjusted path relative to [locale] folder
 import { cn } from '@/lib/utils';
 import { NextIntlClientProvider, useMessages } from 'next-intl';
@@ -38,9 +37,8 @@ export default function RootLayout({
     <html lang={locale} suppressHydrationWarning>
       <body
         className={cn(
-          "min-h-screen bg-background font-sans antialiased",
-          GeistSans.variable,
-          GeistMono.variable
+          "min-h-screen bg-background font-sans antialiased"
+          // Removed GeistSans.variable and GeistMono.variable
         )}
       >
         <NextIntlClientProvider locale={locale} messages={messages}>

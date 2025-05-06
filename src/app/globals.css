@@ -2,9 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
-}
+/*
+  If you are self-hosting Cal Sans and Signika Negative,
+  you would add your @font-face rules here.
+  Example:
+  @font-face {
+    font-family: 'Cal Sans';
+    src: url('/fonts/CalSans-SemiBold.woff2') format('woff2');
+    font-weight: 600;
+    font-style: normal;
+  }
+  @font-face {
+    font-family: 'Signika Negative';
+    src: url('/fonts/SignikaNegative-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+  }
+  ... other weights/styles
+*/
+
+/* Removed explicit body font-family to allow Tailwind's font-sans to take precedence */
 
 @layer base {
   :root {

@@ -11,8 +11,8 @@ export default {
   theme: {
     extend: { // Keep extend here
         fontFamily: {
-            sans: ["var(--font-geist-sans)", ...fontFamily.sans], // Use Geist Sans
-            mono: ["var(--font-geist-mono)", ...fontFamily.mono], // Use Geist Mono
+            sans: ["'Cal Sans'", ...fontFamily.sans], // Use Cal Sans as primary sans-serif
+            mono: ["'Signika Negative'", ...fontFamily.mono], // Use Signika Negative as primary mono, though it's not a mono font. Consider keeping a true mono like Geist Mono or system mono.
         },
         colors: {
             background: 'hsl(var(--background))',
