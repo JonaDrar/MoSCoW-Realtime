@@ -68,18 +68,19 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
       </p>
     ) : null;
 
-    const usernameComponent = <span className="font-medium">{log.username}</span>;
-    const cardTextComponent = <span className="italic">"{cardTextShort}"</span>;
+    // Define components to pass to t.rich
+    const components = {
+      username: <span className="font-medium">{log.username}</span>,
+      cardTextShort: <span className="italic">"{cardTextShort}"</span>,
+      fromPriority: log.fromPriority ? <PriorityBadge priority={log.fromPriority} /> : <></>,
+      toPriority: log.toPriority ? <PriorityBadge priority={log.toPriority} /> : <></>,
+    };
 
     let message;
 
     switch (log.changeType) {
       case 'created':
-        message = t.rich('createdLog', {
-          username: () => usernameComponent,
-          cardTextShort: () => cardTextComponent,
-          toPriority: log.toPriority ? () => <PriorityBadge priority={log.toPriority} /> : () => null,
-        });
+        message = t.rich('createdLog', components);
         return (
           <>
             <PlusCircle className="h-4 w-4 text-green-600 mr-1.5 flex-shrink-0" />
@@ -88,12 +89,7 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
           </>
         );
       case 'moved':
-         message = t.rich('movedLog', {
-           username: () => usernameComponent,
-           cardTextShort: () => cardTextComponent,
-           fromPriority: log.fromPriority ? () => <PriorityBadge priority={log.fromPriority} /> : () => null,
-           toPriority: log.toPriority ? () => <PriorityBadge priority={log.toPriority} /> : () => null,
-         });
+         message = t.rich('movedLog', components);
         return (
             <>
               <ArrowRight className="h-4 w-4 text-blue-600 mr-1.5 flex-shrink-0" />
@@ -102,10 +98,7 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
             </>
           );
       case 'edited':
-         message = t.rich('editedLog', {
-           username: () => usernameComponent,
-           cardTextShort: () => cardTextComponent,
-         });
+         message = t.rich('editedLog', components);
         return (
             <>
               <Pencil className="h-4 w-4 text-orange-600 mr-1.5 flex-shrink-0" />
@@ -118,10 +111,7 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
              </>
            );
       default:
-        message = t.rich('unknownLog', {
-           username: () => usernameComponent,
-           cardTextShort: () => cardTextComponent,
-         });
+        message = t.rich('unknownLog', components);
         return (
            <>
               {/* Optional: Add an icon for unknown changes */}
