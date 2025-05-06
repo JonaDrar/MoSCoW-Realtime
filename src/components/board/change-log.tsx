@@ -46,16 +46,6 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
     wont: tp('wont'),
   };
 
-    // Custom Badge component for use with t.rich
-    // Make sure the key matches the tag in the translation string (e.g., <toPriority/> matches toPriority key)
-    const PriorityBadge = ({ priority }: { priority: Priority }) => (
-      <Badge variant="secondary" className={`mx-1 priority-badge-${priority}`}>
-        {priorityLabels[priority]}
-      </Badge>
-    );
-    PriorityBadge.displayName = 'PriorityBadge'; // Optional: Helps with debugging
-
-
   // Helper to render the change description with translations and rich text
   function renderChangeDescription(log: ChangeLogEntry) {
     const cardTextShort = log.functionalityText.length > 30
@@ -70,14 +60,22 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
 
     // Define components to pass to t.rich. Keys MUST match the tags in the translation JSON.
     // Ensure the components render the desired output (e.g., wrap username in a span).
+    // Pass simple JSX elements instead of complex components for badges.
     const components = {
-      // Use simple elements for rendering text content
       username: <span className="font-medium">{log.username}</span>,
       cardTextShort: <span className="italic">"{cardTextShort}"</span>,
-      // Pass the PriorityBadge component directly, ensuring the keys match the tags in the JSON
-      fromPriority: log.fromPriority ? <PriorityBadge priority={log.fromPriority} /> : <></>,
-      toPriority: log.toPriority ? <PriorityBadge priority={log.toPriority} /> : <></>,
+      fromPriority: log.fromPriority ? (
+        <Badge variant="secondary" className={`mx-1 priority-badge-${log.fromPriority}`}>
+          {priorityLabels[log.fromPriority]}
+        </Badge>
+      ) : <></>,
+      toPriority: log.toPriority ? (
+        <Badge variant="secondary" className={`mx-1 priority-badge-${log.toPriority}`}>
+          {priorityLabels[log.toPriority]}
+        </Badge>
+      ) : <></>,
     };
+
 
     let messageElement;
 
