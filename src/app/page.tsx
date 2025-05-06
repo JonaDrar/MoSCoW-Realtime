@@ -32,12 +32,21 @@ export default function Home() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [initialDialogPriority, setInitialDialogPriority] = useState<Priority>('must');
   const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false); // Add state for client-side rendering
   const [moveToConfirm, setMoveToConfirm] = useState<{ cardId: string; currentPriority: Priority; newPriority: Priority; cardText: string} | null>(null);
 
   const [changeLog, setChangeLog] = useState<ChangeLogEntry[]>([]);
   const [logLoading, setLogLoading] = useState(true); // Separate loading state for logs
   const { toast } = useToast(); // Initialize useToast
 
+
+  // Effect to ensure DragDropContext renders only on the client
+  useEffect(() => {
+    // Check if running in a browser environment before setting isClient
+    if (typeof window !== 'undefined') {
+      setIsClient(true);
+    }
+  }, []);
 
   // Effect for user authentication state
   useEffect(() => {
@@ -88,7 +97,13 @@ export default function Home() {
     const unsubscribeLogs = onSnapshot(logQuery, (querySnapshot) => {
       const fetchedLogs: ChangeLogEntry[] = [];
       querySnapshot.forEach((doc) => {
-        fetchedLogs.push({ id: doc.id, ...doc.data() } as ChangeLogEntry);
+        const data = doc.data();
+        // Ensure timestamp exists before pushing
+        if (data.timestamp) {
+          fetchedLogs.push({ id: doc.id, ...data } as ChangeLogEntry);
+        } else {
+          console.warn(`Log entry ${doc.id} is missing timestamp.`);
+        }
       });
       console.log('Firestore updated change log:', fetchedLogs); // Add log
       setChangeLog(fetchedLogs);
@@ -362,7 +377,7 @@ return (
                   </CardContent>
                   </Card>
               ))
-            ) : user ? (
+            ) : user && isClient ? ( // Only render DragDropContext if user is logged in AND on client
               // Board Content - Only render if user is logged in and not loading
               <DragDropContext onDragEnd={onDragEnd}>
                   {priorities.map((priority) => (
@@ -379,7 +394,7 @@ return (
                       />
                   ))}
               </DragDropContext>
-            ) : null /* Don't render columns if loading or not logged in */ }
+            ) : null /* Don't render columns if loading or not logged in or not client*/ }
         </div>
     </main>
 

@@ -26,11 +26,9 @@ interface DragItemProps {
 }
 
 const DragItem = React.memo(({ functionality, index, onInitiateMove }: DragItemProps) => {
-  // console.log(`Rendering DragItem for ${functionality.id} at index ${index}`); // Log item render
   return (
     <Draggable draggableId={functionality.id} index={index}>
       {(provided, snapshot) => {
-        // console.log(`Draggable state for ${functionality.id}: isDragging=${snapshot.isDragging}`); // Log dragging state
         return (
           <div
             ref={provided.innerRef}
@@ -58,12 +56,6 @@ DragItem.displayName = 'DragItem'; // Add display name for React DevTools
 
 // Update props to use the clearer function name internally if desired, but it receives `onMoveCard` from Home
 export default function BoardColumn({ title, priority, functionalities, onAddCard, onMoveCard }: BoardColumnProps) {
-   // Log props received by BoardColumn to ensure handlers are passed correctly
-   console.log(`Rendering BoardColumn: ${title} (Priority: ${priority})`, {
-    functionalitiesCount: functionalities.length,
-    onAddCard: typeof onAddCard,
-    onMoveCard: typeof onMoveCard, // Check if the handler function is received
-  });
 
   return (
     <Card className={`flex flex-col h-full border-2 ${columnStyles[priority]} bg-card shadow-sm overflow-hidden`}>
@@ -79,8 +71,6 @@ export default function BoardColumn({ title, priority, functionalities, onAddCar
        {/* Droppable Area */}
        <Droppable droppableId={priority} type="FUNCTIONALITY">
          {(provided, snapshot) => {
-           // Log Droppable state
-          //  console.log(`Droppable state for ${priority}: isDraggingOver=${snapshot.isDraggingOver}`);
            return (
              <ScrollArea
                className="flex-grow"
