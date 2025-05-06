@@ -14,14 +14,17 @@ import { useTranslations, useLocale } from 'next-intl'; // Import next-intl hook
 // Helper function for consistent timestamp formatting with locale
 function formatLogTimestamp(timestamp: any, locale: string): string {
   if (!timestamp?.toDate) {
-    return 'Invalid date'; // Handle cases where timestamp is not a Firestore Timestamp
+    // Use translation for invalid date
+    // Cannot call useTranslations here, so pass it or use a fixed string/prop
+    return 'Invalid date'; // Consider passing t('invalidDate') as a prop if needed outside component scope
   }
   try {
     const dateLocale = locale === 'es' ? es : enUS;
     return formatDistanceToNow(timestamp.toDate(), { addSuffix: true, locale: dateLocale });
   } catch (e) {
     console.error("Error formatting timestamp:", e);
-    return 'Error formatting date';
+     // Use translation for error formatting date
+    return 'Error formatting date'; // Consider passing t('errorFormattingDate') as a prop
   }
 }
 
@@ -44,23 +47,20 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
     wont: tp('wont'),
   };
 
-  // Helper to render the change description with translations
+    // Custom Badge component for use with t.rich
+    const PriorityBadge = ({ children, priority }: { children?: React.ReactNode, priority: Priority }) => (
+      <Badge variant="secondary" className={`mx-1 priority-badge-${priority}`}>
+        {children || priorityLabels[priority]}
+      </Badge>
+    );
+    PriorityBadge.displayName = 'PriorityBadge';
+
+
+  // Helper to render the change description with translations and rich text
   function renderChangeDescription(log: ChangeLogEntry) {
     const cardTextShort = log.functionalityText.length > 30
-      ? `"${log.functionalityText.substring(0, 27)}..."`
-      : `"${log.functionalityText}"`;
-
-    const toPriorityBadge = log.toPriority ? (
-      <Badge variant="secondary" className={`ml-1.5 priority-badge-${log.toPriority}`}>
-        {priorityLabels[log.toPriority]}
-      </Badge>
-    ) : null;
-
-    const fromPriorityBadge = log.fromPriority ? (
-      <Badge variant="secondary" className={`mx-1.5 priority-badge-${log.fromPriority}`}>
-        {priorityLabels[log.fromPriority]}
-      </Badge>
-    ) : null;
+      ? `${log.functionalityText.substring(0, 27)}...`
+      : log.functionalityText;
 
     const justificationText = log.justification ? (
       <p className="text-xs text-foreground/80 mt-1 ml-6 w-full">
@@ -68,56 +68,48 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
       </p>
     ) : null;
 
+    const usernameComponent = <span className="font-medium">{log.username}</span>;
+    const cardTextComponent = <span className="italic">"{cardTextShort}"</span>;
+
+    let message;
+
     switch (log.changeType) {
       case 'created':
+        message = t.rich('createdLog', {
+          username: () => usernameComponent,
+          cardTextShort: () => cardTextComponent,
+          toPriority: log.toPriority ? () => <PriorityBadge priority={log.toPriority} /> : () => null,
+        });
         return (
           <>
             <PlusCircle className="h-4 w-4 text-green-600 mr-1.5 flex-shrink-0" />
-            <span
-                dangerouslySetInnerHTML={{
-                  __html: t('createdLog', {
-                    username: `<span class="font-medium mr-1">${log.username}</span>`,
-                    cardTextShort: cardTextShort,
-                    toPriorityBadge: toPriorityBadge ? `<span class="inline-block">${React.renderToStaticMarkup(toPriorityBadge)}</span>` : '',
-                  })
-                }}
-              />.
+            <span className="flex-1">{message}.</span>
             {justificationText}
           </>
         );
       case 'moved':
-         return (
+         message = t.rich('movedLog', {
+           username: () => usernameComponent,
+           cardTextShort: () => cardTextComponent,
+           fromPriority: log.fromPriority ? () => <PriorityBadge priority={log.fromPriority} /> : () => null,
+           toPriority: log.toPriority ? () => <PriorityBadge priority={log.toPriority} /> : () => null,
+         });
+        return (
             <>
               <ArrowRight className="h-4 w-4 text-blue-600 mr-1.5 flex-shrink-0" />
-              <span
-                dangerouslySetInnerHTML={{
-                  __html: t('movedLog', {
-                    username: `<span class="font-medium mr-1">${log.username}</span>`,
-                    cardTextShort: cardTextShort,
-                    fromPriorityBadge: fromPriorityBadge ? `<span class="inline-block">${React.renderToStaticMarkup(fromPriorityBadge)}</span>` : '',
-                    toPriorityBadge: toPriorityBadge ? `<span class="inline-block">${React.renderToStaticMarkup(toPriorityBadge)}</span>` : '',
-                  })
-                }}
-              />.
-              {justificationText && (
-                 <p className="text-xs text-foreground/80 mt-1 ml-6 w-full">
-                    {t('reasonPrefix')} {log.justification}
-                 </p>
-              )}
+               <span className="flex-1">{message}.</span>
+               {justificationText}
             </>
           );
       case 'edited':
-         return (
+         message = t.rich('editedLog', {
+           username: () => usernameComponent,
+           cardTextShort: () => cardTextComponent,
+         });
+        return (
             <>
               <Pencil className="h-4 w-4 text-orange-600 mr-1.5 flex-shrink-0" />
-              <span
-                dangerouslySetInnerHTML={{
-                  __html: t('editedLog', {
-                    username: `<span class="font-medium mr-1">${log.username}</span>`,
-                    cardTextShort: cardTextShort,
-                  })
-                }}
-              />.
+              <span className="flex-1">{message}.</span>
               {log.justification && (
                  <p className="text-xs text-foreground/80 mt-1 ml-6 w-full">
                    {t('detailsPrefix')} {log.justification}
@@ -126,16 +118,14 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
              </>
            );
       default:
-         return (
+        message = t.rich('unknownLog', {
+           username: () => usernameComponent,
+           cardTextShort: () => cardTextComponent,
+         });
+        return (
            <>
-              <span
-                 dangerouslySetInnerHTML={{
-                   __html: t('unknownLog', {
-                     username: `<span class="font-medium mr-1">${log.username}</span>`,
-                     cardTextShort: cardTextShort,
-                   })
-                 }}
-               />.
+              {/* Optional: Add an icon for unknown changes */}
+              <span className="flex-1">{message}.</span>
               {log.justification && (
                 <p className="text-xs text-foreground/80 mt-1 ml-6 w-full">
                   {t('justificationPrefix')} {log.justification}
