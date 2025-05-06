@@ -6,11 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import FunctionalityCard from './functionality-card';
-import { BoardColumnProps, Functionality, Priority } from './types';
+import { BoardColumnProps, Functionality, Priority } from './types'; // Import types
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Draggable, Droppable } from 'react-beautiful-dnd';
-import { cn } from '@/lib/utils'; // Import cn utility
-
+import { cn } from '@/lib/utils';
 
 const columnStyles: Record<Priority, string> = {
     must: 'column-must',
@@ -19,56 +18,47 @@ const columnStyles: Record<Priority, string> = {
     wont: 'column-wont',
 };
 
-interface DragItemProps {
-  functionality: Functionality;
-  index: number;
-  // Use the specific function name passed from Home (which is handleInitiateMove, but received as onMoveCard prop)
-  onInitiateMove: (cardId: string, currentPriority: Priority, newPriority: Priority) => void;
-}
+// Reusable DragItem component - moved to page.tsx for central use
+// interface DragItemProps {
+//   functionality: Functionality;
+//   index: number;
+//   onInitiateMove: (cardId: string, currentPriority: Priority, newPriority: Priority) => void;
+// }
 
-// Using React.memo for performance optimization in lists
-const DragItem = React.memo(({ functionality, index, onInitiateMove }: DragItemProps) => {
-  return (
-    <Draggable draggableId={functionality.id} index={index}>
-      {(provided, snapshot) => {
-        // console.log(`Draggable ${functionality.id}: isDragging=${snapshot.isDragging}`); // Optional: Log dragging state
-        return (
-          // Use a div as the direct child for drag handle props
-          <div
-            ref={provided.innerRef}
-            {...provided.draggableProps}
-            {...provided.dragHandleProps} // Apply drag handle here
-            className={cn(
-                'mb-4 transition-shadow duration-200 outline-none focus:outline-none', // Ensure no outline interferes, explicit focus removal
-                 snapshot.isDragging ? 'shadow-xl ring-2 ring-ring' : 'shadow-md' // Apply shadow normally, enhance on drag
-            )}
-             style={{
-              ...provided.draggableProps.style, // Apply styles from react-beautiful-dnd
-              userSelect: 'none', // Prevent text selection during drag
-            }}
-          >
-            <FunctionalityCard
-              functionality={functionality}
-              // Pass onInitiateMove down to the card for menu actions
-              onMove={(newPriority) => onInitiateMove(functionality.id, functionality.priority, newPriority)}
-            />
-          </div>
-        );
-      }}
-    </Draggable>
-  );
-});
-DragItem.displayName = 'DragItem'; // Add display name for React DevTools
+// const DragItem = React.memo(({ functionality, index, onInitiateMove }: DragItemProps) => {
+//   return (
+//     <Draggable draggableId={functionality.id} index={index}>
+//       {(provided, snapshot) => (
+//         <div
+//           ref={provided.innerRef}
+//           {...provided.draggableProps}
+//           {...provided.dragHandleProps}
+//           className={cn(
+//               'mb-4 transition-shadow duration-200 outline-none focus:outline-none',
+//                snapshot.isDragging ? 'shadow-xl ring-2 ring-ring' : 'shadow-md'
+//           )}
+//            style={{
+//             ...provided.draggableProps.style,
+//             userSelect: 'none',
+//           }}
+//         >
+//           <FunctionalityCard
+//             functionality={functionality}
+//             onMove={(newPriority) => onInitiateMove(functionality.id, functionality.priority, newPriority)}
+//           />
+//         </div>
+//       )}
+//     </Draggable>
+//   );
+// });
+// DragItem.displayName = 'DragItem';
 
 
-// Update props to use the clearer function name internally if desired, but it receives `onMoveCard` from Home
 export default function BoardColumn({ title, priority, functionalities, onAddCard, onMoveCard }: BoardColumnProps) {
 
   return (
-    // Add h-full to ensure the card takes the full height of its grid cell
     <Card className={`flex flex-col h-full border-2 ${columnStyles[priority]} bg-card shadow-sm overflow-hidden`}>
-       {/* Header - sticky top-0 makes it stick within the card, z-10 keeps it above content */}
-       <CardHeader className="flex flex-row items-center justify-between p-4 border-b sticky top-0 bg-card z-10 flex-shrink-0"> {/* Added flex-shrink-0 */}
+       <CardHeader className="flex flex-row items-center justify-between p-4 border-b sticky top-0 bg-card z-10 flex-shrink-0">
          <CardTitle className="text-lg font-semibold text-card-foreground">{title}</CardTitle>
          <Button variant="ghost" size="icon" onClick={() => onAddCard(priority)} className="text-accent hover:text-accent-foreground hover:bg-accent/10 rounded-full">
            <Plus className="h-5 w-5" />
@@ -77,46 +67,61 @@ export default function BoardColumn({ title, priority, functionalities, onAddCar
        </CardHeader>
 
        {/* Droppable Area */}
-       {/* Explicitly set boolean props for react-beautiful-dnd */}
+       {/* Explicitly set isDropDisabled, isCombineEnabled and ignoreContainerClipping to false to satisfy invariant checks */}
        <Droppable
             droppableId={priority}
             type="FUNCTIONALITY"
-            isDropDisabled={false} // Explicitly boolean
-            isCombineEnabled={false} // Explicitly boolean
-            ignoreContainerClipping={false} // Explicitly boolean
+            isDropDisabled={false}
+            isCombineEnabled={false}
+            ignoreContainerClipping={false}
         >
          {(provided, snapshot) => {
-            // console.log(`Droppable ${priority}: isDraggingOver=${snapshot.isDraggingOver}`); // Optional: Log droppable state
            return (
-             // ScrollArea should grow to fill remaining space
              <ScrollArea
-               className="flex-grow" // Use flex-grow to fill available space
-               style={{ backgroundColor: snapshot.isDraggingOver ? 'hsla(var(--accent)/0.1)' : 'transparent' }} // Highlight on drag over
+               className="flex-grow"
+               style={{ backgroundColor: snapshot.isDraggingOver ? 'hsla(var(--accent)/0.1)' : 'transparent' }}
              >
-               {/* Apply provided props to the content container */}
                <CardContent
                  ref={provided.innerRef}
                  {...provided.droppableProps}
-                 className="p-4 h-full min-h-[100px]" // Remove space-y, ensure padding and min height
+                 className="p-4 h-full min-h-[100px]" // Ensure padding and min height
                >
                  {functionalities.length === 0 && !snapshot.isDraggingOver && (
                    <p className="text-sm text-muted-foreground text-center py-4">
                      Drop cards here or click '+' to add.
                    </p>
                  )}
+                 {/* Use Draggable directly here */}
                  {functionalities.map((func, index) => (
-                   <DragItem
-                     key={func.id}
-                     functionality={func}
-                     index={index}
-                     onInitiateMove={onMoveCard} // Pass the received onMoveCard prop down
-                   />
+                    <Draggable key={func.id} draggableId={func.id} index={index}>
+                      {(providedDraggable, snapshotDraggable) => (
+                        <div
+                          ref={providedDraggable.innerRef}
+                          {...providedDraggable.draggableProps}
+                          {...providedDraggable.dragHandleProps} // Apply drag handle here
+                          className={cn(
+                            'mb-4 transition-shadow duration-200 outline-none focus:outline-none', // Ensure no outline interferes, explicit focus removal
+                             snapshotDraggable.isDragging ? 'shadow-xl ring-2 ring-ring' : 'shadow-md' // Apply shadow normally, enhance on drag
+                          )}
+                           style={{
+                            ...providedDraggable.draggableProps.style, // Apply styles from react-beautiful-dnd
+                            userSelect: 'none', // Prevent text selection during drag
+                          }}
+                        >
+                          <FunctionalityCard
+                            functionality={func}
+                            // Pass onMoveCard (which is handleInitiateMove) down to the card
+                            onMove={(newPriority) => onMoveCard(func.id, func.priority, newPriority)}
+                          />
+                        </div>
+                      )}
+                    </Draggable>
                  ))}
                  {provided.placeholder /* Essential for react-beautiful-dnd */}
                </CardContent>
              </ScrollArea>
            );
-         }}
+           }}
        </Droppable>
      </Card>
   );
