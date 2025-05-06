@@ -27,22 +27,36 @@ export default function UserRegistration({ onUserRegistered }: UserRegistrationP
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setLoading(true); // Start loading on auth state change check
       if (currentUser) {
-        const userDocRef = doc(db, 'users', currentUser.uid);
-        const userDoc = await getDoc(userDocRef);
-        if (userDoc.exists()) {
-          setUser(currentUser);
-          const userData = userDoc.data();
-          setUsername(userData.username || '');
-          onUserRegistered(currentUser, userData.username || '');
-        } else {
+        try {
+          const userDocRef = doc(db, 'users', currentUser.uid);
+          const userDoc = await getDoc(userDocRef);
+          if (userDoc.exists()) {
+            setUser(currentUser);
+            const userData = userDoc.data();
+            const currentUsername = userData.username || '';
+            setUsername(currentUsername);
+            onUserRegistered(currentUser, currentUsername);
+          } else {
+            // User exists in auth but not in Firestore, sign out and force registration
+            await auth.signOut();
+            setUser(null);
+            setUsername('');
+          }
+        } catch (error) {
+          console.error("Error checking user document:", error);
+          // Keep user logged out if Firestore check fails
           await auth.signOut();
           setUser(null);
+          setUsername('');
         }
       } else {
+        // No user is signed in
         setUser(null);
+        setUsername('');
       }
-      setLoading(false);
+      setLoading(false); // Finish loading after check
     });
     return () => unsubscribe();
   }, [onUserRegistered]);
@@ -64,8 +78,7 @@ export default function UserRegistration({ onUserRegistered }: UserRegistrationP
         username: username.trim(),
         createdAt: serverTimestamp(),
       });
-      setUser(newUser);
-      onUserRegistered(newUser, username.trim());
+      // No need to setUser or call onUserRegistered here, useEffect handles it
       toast({
         title: t('successToastTitle'),
         description: t('successToastDescription', { username: username.trim() }),
@@ -77,36 +90,49 @@ export default function UserRegistration({ onUserRegistered }: UserRegistrationP
         description: error.message || 'Could not register user.',
         variant: 'destructive',
       });
-    } finally {
-      setLoading(false);
+      setLoading(false); // Ensure loading stops on error
     }
+    // setLoading(false) is handled by the useEffect on auth state change
   };
 
+  // If still checking auth state, show a loader within the card structure
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-primary-gradient p-4">
-        <div className="flex items-center text-primary-foreground">
-          <Loader2 className="mr-2 h-6 w-6 animate-spin" />
-          <span className="text-lg">{tHomePage('loading')}</span>
-        </div>
-      </div>
+      <Card className="w-full max-w-lg shadow-2xl rounded-xl overflow-hidden bg-card/90 backdrop-blur-sm border-border/20">
+         <CardHeader className="text-center p-6 sm:p-8">
+            <div className="mx-auto mb-4 p-3 rounded-full bg-primary/10 text-primary border border-primary/20 w-fit">
+              <Users className="h-8 w-8" />
+            </div>
+            <CardTitle className="text-3xl font-bold text-gradient">{t('title')}</CardTitle>
+            <CardDescription className="text-muted-foreground mt-2 text-base">{t('description')}</CardDescription>
+         </CardHeader>
+         <CardContent className="p-6 sm:p-8 flex justify-center items-center min-h-[150px]">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+         </CardContent>
+         <CardFooter className="p-6 sm:p-8 bg-muted/30 border-t border-border/10">
+             <Button className="w-full h-12 text-lg bg-primary text-primary-foreground" disabled={true}>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                {tHomePage('loading')}
+            </Button>
+         </CardFooter>
+      </Card>
     );
   }
 
+   // If user is logged in (checked by useEffect), this component shouldn't render anything substantial.
+   // The parent component handles showing the main board. Return null.
   if (user) {
     return null;
   }
 
+  // Only render the registration form if not loading and no user is logged in
   return (
-    <div className="flex justify-center items-center min-h-screen bg-primary-gradient p-4">
-      {/* Increased max-w, added padding, background blur backdrop */}
+      // Removed the outer div with gradient background and centering
       <Card className="w-full max-w-lg shadow-2xl rounded-xl overflow-hidden bg-card/90 backdrop-blur-sm border-border/20">
         <CardHeader className="text-center p-6 sm:p-8">
-           {/* Added icon */}
           <div className="mx-auto mb-4 p-3 rounded-full bg-primary/10 text-primary border border-primary/20 w-fit">
             <Users className="h-8 w-8" />
           </div>
-          {/* Larger title */}
           <CardTitle className="text-3xl font-bold text-gradient">{t('title')}</CardTitle>
           <CardDescription className="text-muted-foreground mt-2 text-base">{t('description')}</CardDescription>
         </CardHeader>
@@ -119,16 +145,16 @@ export default function UserRegistration({ onUserRegistered }: UserRegistrationP
               placeholder={t('usernamePlaceholder')}
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="h-12 text-base focus:ring-2 focus:ring-primary/50 transition-shadow duration-200 shadow-inner bg-background/80" // Larger input, subtle styling
-              disabled={loading}
+              className="h-12 text-base focus:ring-2 focus:ring-primary/50 transition-shadow duration-200 shadow-inner bg-background/80"
+              disabled={loading} // Keep disabled check here for button click state
               autoFocus
+              onKeyDown={(e) => e.key === 'Enter' && !loading && handleRegister()} // Allow Enter key submission
             />
           </div>
         </CardContent>
         <CardFooter className="p-6 sm:p-8 bg-muted/30 border-t border-border/10">
-          {/* Larger button */}
           <Button onClick={handleRegister} className="w-full h-12 text-lg bg-primary text-primary-foreground hover:bg-primary/90 transition duration-200" disabled={loading}>
-            {loading ? (
+            {loading ? ( // Show loading only when registration action is in progress
               <>
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
                 {t('joiningButton')}
@@ -139,6 +165,5 @@ export default function UserRegistration({ onUserRegistered }: UserRegistrationP
           </Button>
         </CardFooter>
       </Card>
-    </div>
   );
 }
