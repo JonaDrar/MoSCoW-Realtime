@@ -12,11 +12,10 @@ import { ArrowRight, PlusCircle, Pencil } from 'lucide-react';
 import { useTranslations, useLocale } from 'next-intl'; // Import next-intl hooks
 
 // Helper function for consistent timestamp formatting with locale
-function formatLogTimestamp(timestamp: any, locale: string): string {
+function formatLogTimestamp(timestamp: any, locale: string, tInvalid: string, tError: string): string {
   if (!timestamp?.toDate) {
     // Use translation for invalid date
-    // Cannot call useTranslations here, so pass it or use a fixed string/prop
-    return 'Invalid date'; // Consider passing t('invalidDate') as a prop if needed outside component scope
+    return tInvalid;
   }
   try {
     const dateLocale = locale === 'es' ? es : enUS;
@@ -24,7 +23,7 @@ function formatLogTimestamp(timestamp: any, locale: string): string {
   } catch (e) {
     console.error("Error formatting timestamp:", e);
      // Use translation for error formatting date
-    return 'Error formatting date'; // Consider passing t('errorFormattingDate') as a prop
+    return tError;
   }
 }
 
@@ -48,12 +47,13 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
   };
 
     // Custom Badge component for use with t.rich
+    // Make sure the key matches the tag in the translation string (e.g., <toPriority/> matches toPriority key)
     const PriorityBadge = ({ children, priority }: { children?: React.ReactNode, priority: Priority }) => (
       <Badge variant="secondary" className={`mx-1 priority-badge-${priority}`}>
         {children || priorityLabels[priority]}
       </Badge>
     );
-    PriorityBadge.displayName = 'PriorityBadge';
+    PriorityBadge.displayName = 'PriorityBadge'; // Optional: Helps with debugging
 
 
   // Helper to render the change description with translations and rich text
@@ -68,41 +68,43 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
       </p>
     ) : null;
 
-    // Define components to pass to t.rich
+    // Define components to pass to t.rich. Keys MUST match the tags in the translation JSON.
+    // Ensure the components render the desired output (e.g., wrap username in a span).
     const components = {
       username: <span className="font-medium">{log.username}</span>,
       cardTextShort: <span className="italic">"{cardTextShort}"</span>,
+      // Pass the component directly, t.rich will render it
       fromPriority: log.fromPriority ? <PriorityBadge priority={log.fromPriority} /> : <></>,
       toPriority: log.toPriority ? <PriorityBadge priority={log.toPriority} /> : <></>,
     };
 
-    let message;
+    let messageElement;
 
     switch (log.changeType) {
       case 'created':
-        message = t.rich('createdLog', components);
+        messageElement = t.rich('createdLog', components);
         return (
           <>
             <PlusCircle className="h-4 w-4 text-green-600 mr-1.5 flex-shrink-0" />
-            <span className="flex-1">{message}.</span>
+            <span className="flex-1">{messageElement}.</span>
             {justificationText}
           </>
         );
       case 'moved':
-         message = t.rich('movedLog', components);
+         messageElement = t.rich('movedLog', components);
         return (
             <>
               <ArrowRight className="h-4 w-4 text-blue-600 mr-1.5 flex-shrink-0" />
-               <span className="flex-1">{message}.</span>
+               <span className="flex-1">{messageElement}.</span>
                {justificationText}
             </>
           );
       case 'edited':
-         message = t.rich('editedLog', components);
+         messageElement = t.rich('editedLog', components);
         return (
             <>
               <Pencil className="h-4 w-4 text-orange-600 mr-1.5 flex-shrink-0" />
-              <span className="flex-1">{message}.</span>
+              <span className="flex-1">{messageElement}.</span>
               {log.justification && (
                  <p className="text-xs text-foreground/80 mt-1 ml-6 w-full">
                    {t('detailsPrefix')} {log.justification}
@@ -111,11 +113,11 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
              </>
            );
       default:
-        message = t.rich('unknownLog', components);
+        messageElement = t.rich('unknownLog', components);
         return (
            <>
               {/* Optional: Add an icon for unknown changes */}
-              <span className="flex-1">{message}.</span>
+              <span className="flex-1">{messageElement}.</span>
               {log.justification && (
                 <p className="text-xs text-foreground/80 mt-1 ml-6 w-full">
                   {t('justificationPrefix')} {log.justification}
@@ -149,7 +151,7 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
                 {renderChangeDescription(log)}
             </div>
             <p className="text-xs text-muted-foreground ml-6">
-                {formatLogTimestamp(log.timestamp, locale) || t('invalidDate')}
+                {formatLogTimestamp(log.timestamp, locale, t('invalidDate'), t('errorFormattingDate'))}
             </p>
           </div>
         ))}
@@ -158,7 +160,7 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
   );
 }
 
-// Badge styling remains the same
+// Inject badge styles - This method is generally fine for client components
 const badgeStyles = `
 .priority-badge-must { background-color: hsl(var(--moscow-must-bg)); color: hsl(var(--moscow-must-fg)); border: 1px solid hsl(var(--moscow-must-border)); }
 .priority-badge-should { background-color: hsl(var(--moscow-should-bg)); color: hsl(var(--moscow-should-fg)); border: 1px solid hsl(var(--moscow-should-border)); }
@@ -168,11 +170,15 @@ const badgeStyles = `
 
 if (typeof window !== 'undefined') {
   const styleId = 'priority-badge-styles';
-  if (!document.getElementById(styleId)) {
-      const styleSheet = document.createElement("style");
+  let styleSheet = document.getElementById(styleId);
+  if (!styleSheet) {
+      styleSheet = document.createElement("style");
       styleSheet.id = styleId;
-      styleSheet.type = "text/css";
-      styleSheet.innerText = badgeStyles;
+      styleSheet.setAttribute("type", "text/css"); // Use setAttribute
       document.head.appendChild(styleSheet);
+  }
+   // Update innerText safely
+  if (styleSheet.textContent !== badgeStyles) {
+     styleSheet.textContent = badgeStyles;
   }
 }
