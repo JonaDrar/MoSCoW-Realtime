@@ -17,7 +17,8 @@ interface UserRegistrationProps {
 }
 
 export default function UserRegistration({ onUserRegistered }: UserRegistrationProps) {
-  const t = useTranslations('UserRegistration'); // Initialize translations hook
+  const t = useTranslations('UserRegistration'); // Initialize translations hook for UserRegistration
+  const tHomePage = useTranslations('HomePage'); // Initialize separate translations hook for HomePage
   const [username, setUsername] = useState('');
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -34,6 +35,7 @@ export default function UserRegistration({ onUserRegistered }: UserRegistrationP
           setUsername(userData.username || '');
           onUserRegistered(currentUser, userData.username || '');
         } else {
+          // If user exists in auth but not in Firestore (e.g., manual deletion), sign them out.
           await auth.signOut();
           setUser(null);
         }
@@ -81,10 +83,11 @@ export default function UserRegistration({ onUserRegistered }: UserRegistrationP
   };
 
   if (loading) {
-    // Consider using a Skeleton or a more specific loading indicator
-    return <div className="flex justify-center items-center h-screen">{t('HomePage.loading')}</div>;
+    // Use the correct translation hook and key
+    return <div className="flex justify-center items-center h-screen">{tHomePage('loading')}</div>;
   }
 
+  // If user is already authenticated (and found in Firestore), don't render the form
   if (user) {
     return null;
   }
