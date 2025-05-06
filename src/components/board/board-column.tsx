@@ -21,33 +21,50 @@ const columnStyles: Record<Priority, string> = {
 interface DragItemProps {
   functionality: Functionality;
   index: number;
-  // Use the specific function name from Home for clarity
+  // Use the specific function name passed from Home (which is handleInitiateMove, but received as onMoveCard prop)
   onInitiateMove: (cardId: string, currentPriority: Priority, newPriority: Priority) => void;
 }
 
-const DragItem = ({ functionality, index, onInitiateMove }: DragItemProps) => {
+const DragItem = React.memo(({ functionality, index, onInitiateMove }: DragItemProps) => {
+  // console.log(`Rendering DragItem for ${functionality.id} at index ${index}`); // Log item render
   return (
     <Draggable draggableId={functionality.id} index={index}>
-      {(provided, snapshot) => (
-        <div
-          ref={provided.innerRef}
-          {...provided.draggableProps}
-          {...provided.dragHandleProps}
-          className={`mb-4 transition-shadow duration-200 ${snapshot.isDragging ? 'shadow-xl' : ''}`} // Add spacing and dragging shadow
-        >
-          <FunctionalityCard
-            functionality={functionality}
-            // Pass onInitiateMove down to the card for menu actions
-            onMove={(newPriority) => onInitiateMove(functionality.id, functionality.priority, newPriority)}
-          />
-        </div>
-      )}
+      {(provided, snapshot) => {
+        // console.log(`Draggable state for ${functionality.id}: isDragging=${snapshot.isDragging}`); // Log dragging state
+        return (
+          <div
+            ref={provided.innerRef}
+            {...provided.draggableProps}
+            {...provided.dragHandleProps}
+            className={`mb-4 transition-shadow duration-200 ${snapshot.isDragging ? 'shadow-xl ring-2 ring-ring' : ''}`} // Add spacing and dragging visual feedback
+             style={{
+              ...provided.draggableProps.style, // Ensure react-beautiful-dnd styles are applied
+            }}
+          >
+            <FunctionalityCard
+              functionality={functionality}
+              // Pass onInitiateMove down to the card for menu actions
+              // This 'onMove' prop on FunctionalityCard calls the 'onInitiateMove' passed to DragItem
+              onMove={(newPriority) => onInitiateMove(functionality.id, functionality.priority, newPriority)}
+            />
+          </div>
+        );
+      }}
     </Draggable>
   );
-};
+});
+DragItem.displayName = 'DragItem'; // Add display name for React DevTools
 
-// Update props to use the clearer function name
-export default function BoardColumn({ title, priority, functionalities, onAddCard, onMoveCard: onInitiateMove }: BoardColumnProps) {
+
+// Update props to use the clearer function name internally if desired, but it receives `onMoveCard` from Home
+export default function BoardColumn({ title, priority, functionalities, onAddCard, onMoveCard }: BoardColumnProps) {
+   // Log props received by BoardColumn to ensure handlers are passed correctly
+   console.log(`Rendering BoardColumn: ${title} (Priority: ${priority})`, {
+    functionalitiesCount: functionalities.length,
+    onAddCard: typeof onAddCard,
+    onMoveCard: typeof onMoveCard, // Check if the handler function is received
+  });
+
   return (
     <Card className={`flex flex-col h-full border-2 ${columnStyles[priority]} bg-card shadow-sm overflow-hidden`}>
        {/* Header */}
@@ -61,33 +78,37 @@ export default function BoardColumn({ title, priority, functionalities, onAddCar
 
        {/* Droppable Area */}
        <Droppable droppableId={priority} type="FUNCTIONALITY">
-         {(provided, snapshot) => (
-           <ScrollArea
-             className="flex-grow"
-             style={{ backgroundColor: snapshot.isDraggingOver ? 'hsla(var(--accent)/0.1)' : 'transparent' }} // Highlight on drag over
+         {(provided, snapshot) => {
+           // Log Droppable state
+          //  console.log(`Droppable state for ${priority}: isDraggingOver=${snapshot.isDraggingOver}`);
+           return (
+             <ScrollArea
+               className="flex-grow"
+               style={{ backgroundColor: snapshot.isDraggingOver ? 'hsla(var(--accent)/0.1)' : 'transparent' }} // Highlight on drag over
              >
-             <CardContent
-               ref={provided.innerRef}
-               {...provided.droppableProps}
-               className="p-4 space-y-0 h-full min-h-[100px]" // Remove default space-y, ensure min height
+               <CardContent
+                 ref={provided.innerRef}
+                 {...provided.droppableProps}
+                 className="p-4 space-y-0 h-full min-h-[100px]" // Remove default space-y, ensure min height
                >
-               {functionalities.length === 0 && !snapshot.isDraggingOver && (
-                 <p className="text-sm text-muted-foreground text-center py-4">
-                   Drop cards here or click '+' to add.
-                 </p>
-               )}
-               {functionalities.map((func, index) => (
-                 <DragItem
-                   key={func.id}
-                   functionality={func}
-                   index={index}
-                   onInitiateMove={onInitiateMove} // Pass down the handler
-                 />
-               ))}
-               {provided.placeholder}
-             </CardContent>
-           </ScrollArea>
-         )}
+                 {functionalities.length === 0 && !snapshot.isDraggingOver && (
+                   <p className="text-sm text-muted-foreground text-center py-4">
+                     Drop cards here or click '+' to add.
+                   </p>
+                 )}
+                 {functionalities.map((func, index) => (
+                   <DragItem
+                     key={func.id}
+                     functionality={func}
+                     index={index}
+                     onInitiateMove={onMoveCard} // Pass the received onMoveCard prop down
+                   />
+                 ))}
+                 {provided.placeholder /* Essential for react-beautiful-dnd */}
+               </CardContent>
+             </ScrollArea>
+           );
+         }}
        </Droppable>
      </Card>
   );

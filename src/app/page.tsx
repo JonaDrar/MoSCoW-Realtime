@@ -90,6 +90,7 @@ export default function Home() {
       querySnapshot.forEach((doc) => {
         fetchedLogs.push({ id: doc.id, ...doc.data() } as ChangeLogEntry);
       });
+      console.log('Firestore updated change log:', fetchedLogs); // Add log
       setChangeLog(fetchedLogs);
       setLogLoading(false);
     }, (error) => {
@@ -191,17 +192,39 @@ export default function Home() {
   // Renamed from onMoveCard in BoardColumn props, opens the confirmation dialog
   const handleInitiateMove = (cardId: string, currentPriority: Priority, newPriority: Priority) => {
       const card = functionalities.find(f => f.id === cardId);
-      if (!card) return;
-      console.log(`Initiating move for card ${cardId} from ${currentPriority} to ${newPriority}`); // Add log
+      if (!card) {
+           console.error(`handleInitiateMove: Could not find card with ID: ${cardId}`);
+           toast({
+                title: 'Move Error',
+                description: 'Could not find the item to move.',
+                variant: 'destructive',
+           });
+           return;
+      }
+      console.log(`Initiating move for card ${cardId} ("${card.text}") from ${currentPriority} to ${newPriority}`);
       setMoveToConfirm({ cardId, currentPriority, newPriority, cardText: card.text });
       setIsMoveDialogOpen(true);
   };
 
 
   const handleConfirmMove = async (justification: string) => {
-    if (!user || !moveToConfirm) throw new Error("Cannot move card.");
+    if (!user || !moveToConfirm) {
+        console.error("handleConfirmMove: Cannot move card. User or moveToConfirm state is missing.", {user, moveToConfirm});
+         toast({
+            title: 'Move Error',
+            description: 'Cannot complete the move. Missing required information.',
+            variant: 'destructive',
+        });
+        // Close dialog and reset state defensively
+        setIsMoveDialogOpen(false);
+        setMoveToConfirm(null);
+        return; // Stop execution
+    }
+
 
     const { cardId, currentPriority, newPriority, cardText } = moveToConfirm;
+    console.log(`handleConfirmMove: Moving card ${cardId} ("${cardText}") from ${currentPriority} to ${newPriority} with justification: "${justification}"`);
+
 
     const cardRef = doc(db, 'functionalities', cardId);
 
@@ -221,7 +244,7 @@ export default function Home() {
         changeType: 'moved' as 'moved',
         fromPriority: currentPriority,
         toPriority: newPriority,
-        justification: justification,
+        justification: justification, // Store the justification
         // timestamp will be set by serverTimestamp in batch
     };
      const logRef = doc(collection(db, 'changeLog')); // Create ref for the log entry
@@ -252,33 +275,51 @@ export default function Home() {
 
   const onDragEnd = (result: DropResult) => {
     const { source, destination, draggableId } = result;
-    console.log("Drag ended:", result); // Add log for drag end event
+    console.log("Drag ended:", { source, destination, draggableId }); // Log the entire result object
 
     // If dropped outside a droppable area, do nothing
     if (!destination) {
-      console.log("Dropped outside droppable area.");
+      console.log("Dropped outside droppable area. No action taken.");
       return;
     }
 
     const sourcePriority = source.droppableId as Priority;
     const destinationPriority = destination.droppableId as Priority;
 
+    // Log the priorities
+    console.log(`Source Priority: ${sourcePriority}, Destination Priority: ${destinationPriority}`);
+
     // If dropped in the same column (even if index changed), do nothing for now
     // Reordering within a column can be implemented separately if needed
     if (source.droppableId === destination.droppableId) {
-      console.log("Dropped in the same column.");
+      console.log("Dropped in the same column. No action taken.");
       return;
     }
 
-    // If dropped in a different column, open the confirmation dialog
+    // If dropped in a different column, attempt to find the card and initiate move
+    console.log(`Attempting to move card with ID: ${draggableId} from ${sourcePriority} to ${destinationPriority}`);
+
+    // Explicitly check if functionalities array is populated
+    if (!functionalities || functionalities.length === 0) {
+        console.error("onDragEnd: Functionalities array is empty or undefined. Cannot find card.");
+        toast({
+            title: 'Drag Error',
+            description: 'Board items are not loaded. Cannot move card.',
+            variant: 'destructive',
+        });
+        return;
+    }
+
     const movedFunctionality = functionalities.find(f => f.id === draggableId);
+
     if (movedFunctionality) {
-        console.log(`Found functionality to move: ${draggableId}`);
+        console.log(`Found functionality to move: ID=${draggableId}, Text="${movedFunctionality.text}". Calling handleInitiateMove.`);
+        // Call the function to open the confirmation dialog
         handleInitiateMove(draggableId, sourcePriority, destinationPriority);
-        // Note: We don't update the local state here immediately.
-        // The Firestore listener will update the state when the change is persisted.
+        // Note: We intentionally DON'T update local state immediately.
+        // The Firestore listener will update the state when the change is persisted after confirmation.
     } else {
-        console.error("Could not find dragged functionality with ID:", draggableId);
+        console.error(`Could not find dragged functionality with ID: ${draggableId}. Functionalities list:`, functionalities);
         toast({
             title: 'Drag Error',
             description: 'Could not find the item you tried to move.',
@@ -334,7 +375,7 @@ return (
                         )}
                         onAddCard={handleOpenAddDialog}
                         // Pass handleInitiateMove which opens the dialog
-                        onMoveCard={handleInitiateMove}
+                        onMoveCard={handleInitiateMove} // This prop is correctly named onMoveCard in BoardColumn
                       />
                   ))}
               </DragDropContext>
@@ -371,4 +412,3 @@ return (
   </div>
 );
 }
-
