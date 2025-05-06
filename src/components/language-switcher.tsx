@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Languages } from 'lucide-react';
-import { locales } from '@/i18n'; // Import locales from config
+import { locales } from '@/i18n/request'; // Import locales from config
 
 export default function LanguageSwitcher() {
   const locale = useLocale();
