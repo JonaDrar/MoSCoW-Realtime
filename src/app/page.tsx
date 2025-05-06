@@ -62,6 +62,7 @@ export default function Home() {
       querySnapshot.forEach((doc) => {
         fetchedFunctionalities.push({ id: doc.id, ...doc.data() } as Functionality);
       });
+      console.log('Firestore updated functionalities:', fetchedFunctionalities); // Add log
       setFunctionalities(fetchedFunctionalities);
       setLoading(false); // Set loading false after successful fetch
     }, (error) => {
@@ -75,7 +76,7 @@ export default function Home() {
     });
 
     return () => unsubscribe(); // Cleanup listener on unmount or user change
-  }, [user]);
+  }, [user, toast]); // Added toast as dependency
 
   // Effect for fetching change log
   useEffect(() => {
@@ -102,7 +103,7 @@ export default function Home() {
     });
 
     return () => unsubscribeLogs(); // Cleanup listener
-  }, [user]); // Re-run if user changes
+  }, [user, toast]); // Re-run if user changes, added toast dependency
 
 
    const logChange = async (details: Omit<ChangeLogEntry, 'id' | 'timestamp'>) => {
@@ -191,6 +192,7 @@ export default function Home() {
   const handleInitiateMove = (cardId: string, currentPriority: Priority, newPriority: Priority) => {
       const card = functionalities.find(f => f.id === cardId);
       if (!card) return;
+      console.log(`Initiating move for card ${cardId} from ${currentPriority} to ${newPriority}`); // Add log
       setMoveToConfirm({ cardId, currentPriority, newPriority, cardText: card.text });
       setIsMoveDialogOpen(true);
   };
@@ -250,20 +252,28 @@ export default function Home() {
 
   const onDragEnd = (result: DropResult) => {
     const { source, destination, draggableId } = result;
+    console.log("Drag ended:", result); // Add log for drag end event
 
     // If dropped outside a droppable area, do nothing
-    if (!destination) return;
+    if (!destination) {
+      console.log("Dropped outside droppable area.");
+      return;
+    }
 
     const sourcePriority = source.droppableId as Priority;
     const destinationPriority = destination.droppableId as Priority;
 
     // If dropped in the same column (even if index changed), do nothing for now
     // Reordering within a column can be implemented separately if needed
-    if (source.droppableId === destination.droppableId) return;
+    if (source.droppableId === destination.droppableId) {
+      console.log("Dropped in the same column.");
+      return;
+    }
 
     // If dropped in a different column, open the confirmation dialog
     const movedFunctionality = functionalities.find(f => f.id === draggableId);
     if (movedFunctionality) {
+        console.log(`Found functionality to move: ${draggableId}`);
         handleInitiateMove(draggableId, sourcePriority, destinationPriority);
         // Note: We don't update the local state here immediately.
         // The Firestore listener will update the state when the change is persisted.
@@ -361,3 +371,4 @@ return (
   </div>
 );
 }
+
