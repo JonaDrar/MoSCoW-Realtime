@@ -86,7 +86,7 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
         return (
           <>
             <PlusCircle className="h-4 w-4 text-green-600 mr-1.5 flex-shrink-0" />
-            <span className="flex-1">{messageElement}.</span>
+            <span className="flex-1">{messageElement}</span> {/* Removed trailing dot */}
             {justificationText}
           </>
         );
@@ -95,7 +95,7 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
         return (
             <>
               <ArrowRight className="h-4 w-4 text-blue-600 mr-1.5 flex-shrink-0" />
-               <span className="flex-1">{messageElement}.</span>
+               <span className="flex-1">{messageElement}</span> {/* Removed trailing dot */}
                {justificationText}
             </>
           );
@@ -104,7 +104,7 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
         return (
             <>
               <Pencil className="h-4 w-4 text-orange-600 mr-1.5 flex-shrink-0" />
-              <span className="flex-1">{messageElement}.</span>
+              <span className="flex-1">{messageElement}</span> {/* Removed trailing dot */}
               {log.justification && (
                  <p className="text-xs text-foreground/80 mt-1 ml-6 w-full">
                    {t('detailsPrefix')} {log.justification}
@@ -117,7 +117,7 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
         return (
            <>
               {/* Optional: Add an icon for unknown changes */}
-              <span className="flex-1">{messageElement}.</span>
+              <span className="flex-1">{messageElement}</span> {/* Removed trailing dot */}
               {log.justification && (
                 <p className="text-xs text-foreground/80 mt-1 ml-6 w-full">
                   {t('justificationPrefix')} {log.justification}
