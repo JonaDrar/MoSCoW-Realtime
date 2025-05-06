@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { NextIntlClientProvider, useMessages } from 'next-intl';
 import { locales } from '@/i18n'; // Import locales from i18n config
 import {unstable_setRequestLocale} from 'next-intl/server';
+import { ThemeProvider } from "@/components/theme-provider"; // Import ThemeProvider
 
 // Generate static params for locales
 export function generateStaticParams() {
@@ -43,7 +44,14 @@ export default function RootLayout({
         )}
       >
         <NextIntlClientProvider locale={locale} messages={messages}>
-          {children}
+           <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+             {children}
+           </ThemeProvider>
         </NextIntlClientProvider>
       </body>
     </html>

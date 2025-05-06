@@ -3,7 +3,7 @@
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
 import React, { useState, useEffect } from 'react';
 import type { User } from 'firebase/auth';
-import { collection, addDoc, updateDoc, doc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp, writeBatch } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, doc, onSnapshot, query, orderBy, serverTimestamp, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import UserRegistration from '@/components/auth/user-registration';
 import BoardColumn from '@/components/board/board-column';
@@ -24,16 +24,17 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { Plus, Info, Languages } from "lucide-react"; // Import Languages icon
+import { Plus, Info } from "lucide-react";
 import FunctionalityCard from "@/components/board/functionality-card";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useTranslations } from 'next-intl'; // Import useTranslations
-import LanguageSwitcher from '@/components/language-switcher'; // Import LanguageSwitcher
+import { useTranslations } from 'next-intl';
+import LanguageSwitcher from '@/components/language-switcher';
+import { ThemeToggle } from "@/components/theme-toggle"; // Import ThemeToggle
 
 const priorities: Priority[] = ['must', 'should', 'could', 'wont'];
 
-// Styles for accordion trigger based on priority (remains the same)
+// Styles for accordion trigger based on priority
 const columnTriggerStyles: Record<Priority, string> = {
     must: 'border-l-4 border-[hsl(var(--moscow-must-border))] hover:bg-[hsl(var(--moscow-must-bg))]',
     should: 'border-l-4 border-[hsl(var(--moscow-should-border))] hover:bg-[hsl(var(--moscow-should-bg))]',
@@ -41,7 +42,7 @@ const columnTriggerStyles: Record<Priority, string> = {
     wont: 'border-l-4 border-[hsl(var(--moscow-wont-border))] hover:bg-[hsl(var(--moscow-wont-bg))]',
 };
 
-// Reusable DragItem component (remains the same)
+// Reusable DragItem component
 interface DragItemProps {
   functionality: Functionality;
   index: number;
@@ -62,7 +63,7 @@ const DragItem = React.memo(({ functionality, index, onInitiateMove }: DragItemP
           )}
           style={{
             ...provided.draggableProps.style,
-            userSelect: 'none',
+            userSelect: 'none', // Prevent text selection while dragging
           }}
         >
           <FunctionalityCard
@@ -78,7 +79,7 @@ DragItem.displayName = 'DragItem';
 
 
 export default function Home() {
-  const t = useTranslations(); // Initialize translations hook
+  const t = useTranslations();
   const [user, setUser] = useState<User | null>(null);
   const [username, setUsername] = useState<string>('');
   const [functionalities, setFunctionalities] = useState<Functionality[]>([]);
@@ -94,7 +95,6 @@ export default function Home() {
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
-  // Use translated priority labels
   const priorityLabels: Record<Priority, string> = {
     must: t('Priorities.must'),
     should: t('Priorities.should'),
@@ -103,6 +103,7 @@ export default function Home() {
   };
 
   useEffect(() => {
+    // Prevent hydration errors by ensuring client-side only execution
     if (typeof window !== 'undefined') {
       setIsClient(true);
     }
@@ -117,7 +118,7 @@ export default function Home() {
   }, [user]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !isClient) return; // Only run on client and when user is logged in
 
     setLoading(true);
     const q = query(collection(db, 'functionalities'), orderBy('createdAt', 'asc'));
@@ -140,10 +141,10 @@ export default function Home() {
     });
 
     return () => unsubscribe();
-  }, [user, toast, t]); // Added t to dependency array
+  }, [user, toast, t, isClient]); // Added isClient dependency
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !isClient) return; // Only run on client and when user is logged in
 
     setLogLoading(true);
     const logQuery = query(collection(db, 'changeLog'), orderBy('timestamp', 'desc'));
@@ -171,7 +172,7 @@ export default function Home() {
     });
 
     return () => unsubscribeLogs();
-  }, [user, toast, t]); // Added t to dependency array
+  }, [user, toast, t, isClient]); // Added isClient dependency
 
   const handleUserRegistered = (loggedInUser: User, registeredUsername: string) => {
     setUser(loggedInUser);
@@ -344,39 +345,69 @@ export default function Home() {
             }
         } else {
             console.log(t('HomePage.reorderLog'));
+            // Note: Reordering within the same column is not persisted.
+            // For full persistence, you'd need to update item order in Firestore.
         }
     };
 
 
   const renderBoardContent = () => {
-    if (loading) {
-      return isMobile ? (
-        <div className="space-y-2 p-4">
-          {priorities.map(p => <Skeleton key={p} className="h-12 w-full rounded-md" />)}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 flex-grow overflow-hidden min-h-0">
-          {priorities.map((p) => (
-            <Card key={p} className="flex flex-col bg-card shadow-sm min-h-[300px]">
-              <CardHeader className="p-4 border-b flex flex-row justify-between items-center">
-                <Skeleton className="h-6 w-3/4" />
-                <Skeleton className="h-8 w-8 rounded-full" />
-              </CardHeader>
-              <CardContent className="p-4 space-y-4 flex-grow overflow-y-auto">
-                <Skeleton className="h-24 w-full rounded-lg" />
-                <Skeleton className="h-20 w-full rounded-lg" />
-                <Skeleton className="h-28 w-full rounded-lg" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      );
+     if (!isClient) {
+      // Render skeleton or nothing on the server/before client mount
+        return isMobile ? (
+          <div className="space-y-2 p-4">
+            {priorities.map(p => <Skeleton key={p} className="h-12 w-full rounded-md" />)}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 flex-grow overflow-hidden min-h-0 p-6"> {/* Added padding */}
+            {priorities.map((p) => (
+              <Card key={p} className="flex flex-col bg-card shadow-sm min-h-[300px]">
+                <CardHeader className="p-4 border-b flex flex-row justify-between items-center">
+                  <Skeleton className="h-6 w-3/4" />
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                </CardHeader>
+                <CardContent className="p-4 space-y-4 flex-grow overflow-y-auto">
+                  <Skeleton className="h-24 w-full rounded-lg" />
+                  <Skeleton className="h-20 w-full rounded-lg" />
+                  <Skeleton className="h-28 w-full rounded-lg" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        );
     }
 
-    if (!user || !isClient) {
+    if (loading) {
+        // Show skeletons while data is loading on the client
+         return isMobile ? (
+          <div className="space-y-2 p-4">
+            {priorities.map(p => <Skeleton key={p} className="h-12 w-full rounded-md" />)}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 flex-grow overflow-hidden min-h-0 p-6"> {/* Added padding */}
+            {priorities.map((p) => (
+              <Card key={p} className="flex flex-col bg-card shadow-sm min-h-[300px]">
+                <CardHeader className="p-4 border-b flex flex-row justify-between items-center">
+                  <Skeleton className="h-6 w-3/4" />
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                </CardHeader>
+                <CardContent className="p-4 space-y-4 flex-grow overflow-y-auto">
+                  <Skeleton className="h-24 w-full rounded-lg" />
+                  <Skeleton className="h-20 w-full rounded-lg" />
+                  <Skeleton className="h-28 w-full rounded-lg" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        );
+    }
+
+    if (!user) {
+        // Show registration form if not logged in (already handled below, but good for clarity)
         return null;
     }
 
+     // Render the board only on the client after hydration and data loaded
      return (
         <DragDropContext onDragEnd={onDragEnd}>
             {isMobile ? (
@@ -412,7 +443,7 @@ export default function Home() {
                                                 )}
                                                 {functionalities
                                                     .filter((f) => f.priority === priority)
-                                                    .sort((a, b) => (a.createdAt?.toMillis() ?? 0) - (b.createdAt?.toMillis() ?? 0))
+                                                    // .sort((a, b) => (a.createdAt?.toMillis() ?? 0) - (b.createdAt?.toMillis() ?? 0)) // Order maintained by query
                                                     .map((func, index) => (
                                                         <DragItem
                                                             key={func.id}
@@ -454,8 +485,8 @@ export default function Home() {
   return (
     <div className="flex flex-col md:flex-row h-screen bg-muted/40 overflow-hidden">
        <main className="flex-1 flex flex-col p-0 md:p-6 lg:p-8 overflow-hidden">
-         <header className="mb-0 md:mb-6 p-4 md:p-0 flex-shrink-0 flex justify-between items-center flex-wrap gap-2"> {/* Allow wrap for small screens */}
-            <div className="flex-grow min-w-0"> {/* Allow title to shrink */}
+         <header className="mb-0 md:mb-6 p-4 md:p-0 flex-shrink-0 flex justify-between items-center flex-wrap gap-2">
+            <div className="flex-grow min-w-0">
                <h1 className="text-3xl md:text-4xl font-bold text-gradient truncate">{t('App.title')}</h1>
                {user && username && (
                  <p className="text-muted-foreground mt-1 text-sm md:text-base">{t('HomePage.welcomeMessage', { username: username })}</p>
@@ -467,17 +498,16 @@ export default function Home() {
                     variant="outline"
                     size="sm"
                     onClick={() => setIsExplanationOpen(true)}
-                    className="" // Removed ml-4 to rely on gap
                 >
                     <Info className="h-4 w-4 mr-2" />
                     {t('HomePage.moscowExplanationButton')}
                 </Button>
-                {/* Language Switcher Button */}
                  <LanguageSwitcher />
+                 <ThemeToggle /> {/* Add ThemeToggle button */}
             </div>
          </header>
 
-         {!loading && !user && (
+         {!loading && !user && isClient && ( // Render registration only on client when not loading and no user
             <div className="flex-grow flex items-center justify-center p-4">
               <UserRegistration onUserRegistered={handleUserRegistered} />
             </div>
@@ -491,9 +521,10 @@ export default function Home() {
        {user && (
           <aside className={cn(
               "border-t md:border-t-0 md:border-l bg-card flex-shrink-0 flex flex-col",
-              "fixed bottom-0 left-0 right-0 h-48 md:h-auto md:relative md:w-64 lg:w-72 z-20 transition-height duration-300 ease-in-out",
+              "fixed bottom-0 left-0 right-0 h-48 md:h-auto md:relative md:w-64 lg:w-72 z-20 transition-height duration-300 ease-in-out", // Adjusted classes for mobile bottom sheet
           )}>
                <h2 className="text-lg font-semibold p-4 border-b text-card-foreground hidden md:block">{t('ChangeLog.title')}</h2>
+               {/* Mobile drag handle (optional) */}
                <div className="md:hidden w-8 h-1 bg-border rounded-full mx-auto mt-2 mb-1 cursor-grab active:cursor-grabbing"></div>
                <ChangeLog logs={changeLog} loading={logLoading} />
           </aside>
