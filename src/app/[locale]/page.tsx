@@ -317,31 +317,35 @@ export default function Home() {
             return;
         }
 
-        if (source.droppableId !== destination.droppableId) {
-            if (!functionalities || functionalities.length === 0) {
-                console.error("onDragEnd: Functionalities array is empty or undefined. Cannot find card.");
-                toast({
-                    title: t('HomePage.dragErrorTitle'),
-                    description: t('HomePage.dragErrorBoardItems'),
-                    variant: 'destructive',
-                });
-                return;
-            }
+        if (!functionalities || functionalities.length === 0) {
+            console.error("onDragEnd: Functionalities array is empty or undefined. Cannot find card.");
+            toast({
+                title: t('HomePage.dragErrorTitle'),
+                description: t('HomePage.dragErrorBoardItems'),
+                variant: 'destructive',
+            });
+            return;
+        }
 
-            const movedFunctionality = functionalities.find(f => f.id === draggableId);
+        const movedFunctionality = functionalities.find(f => f.id === draggableId);
 
-            if (movedFunctionality) {
+        if (movedFunctionality) {
+            if (source.droppableId !== destination.droppableId) {
+                // Move to a different column
                 handleInitiateMove(draggableId, sourcePriority, destinationPriority);
             } else {
-                console.error(`Could not find dragged functionality with ID: ${draggableId}. Functionalities list:`, functionalities);
-                toast({
-                    title: t('HomePage.dragErrorTitle'),
-                    description: t('HomePage.dragErrorFindItem'),
-                    variant: 'destructive',
-                });
+                // Reordering within the same column - NOT IMPLEMENTED
+                console.log(t('HomePage.reorderLog'));
+                // If reordering needs to be persisted, Firestore logic would go here.
+                // For now, react-beautiful-dnd handles the visual update optimistically.
             }
         } else {
-            console.log(t('HomePage.reorderLog'));
+            console.error(`Could not find dragged functionality with ID: ${draggableId}. Functionalities list:`, functionalities);
+            toast({
+                title: t('HomePage.dragErrorTitle'),
+                description: t('HomePage.dragErrorFindItem'),
+                variant: 'destructive',
+            });
         }
     };
 
@@ -387,15 +391,29 @@ export default function Home() {
                             <AccordionTrigger className={cn("flex justify-between items-center p-4 font-semibold text-sm hover:no-underline", columnTriggerStyles[priority])}>
                                 <div className="flex justify-between items-center w-full">
                                    <span>{priorityLabels[priority]} ({functionalities.filter(f => f.priority === priority).length})</span>
-                                    <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleOpenAddDialog(priority); }} className="h-7 w-7 text-accent hover:text-accent-foreground hover:bg-accent/10 rounded-full -mr-2">
+                                   {/* Button is inside trigger, which is a button. Use asChild and render as span */}
+                                   <Button
+                                      asChild
+                                      variant="ghost"
+                                      size="icon"
+                                      onClick={(e) => { e.stopPropagation(); handleOpenAddDialog(priority); }}
+                                      className="h-7 w-7 text-accent hover:text-accent-foreground hover:bg-accent/10 rounded-full -mr-2"
+                                    >
+                                      <span role="button" aria-label={t('HomePage.mobileAddCardTooltip', { title: priorityLabels[priority] })}>
                                         <Plus className="h-4 w-4" />
-                                        <span className="sr-only">{t('HomePage.mobileAddCardTooltip', { title: priorityLabels[priority] })}</span>
+                                      </span>
                                     </Button>
                                 </div>
 
                             </AccordionTrigger>
                              <AccordionContent className="border-t">
-                                <Droppable droppableId={priority} type="FUNCTIONALITY" isDropDisabled={false} isCombineEnabled={false} ignoreContainerClipping={false}>
+                                <Droppable
+                                    droppableId={priority}
+                                    type="FUNCTIONALITY"
+                                    isDropDisabled={false}
+                                    isCombineEnabled={false}
+                                    ignoreContainerClipping={false}
+                                >
                                     {(provided, snapshot) => (
                                         <ScrollArea
                                             className="flex-grow max-h-60"
