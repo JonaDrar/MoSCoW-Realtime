@@ -33,13 +33,10 @@ const categoryClasses: Record<Priority, string> = {
 export default function FunctionalityCard({ functionality, onMove }: FunctionalityCardProps) {
   const { text, justification, proposerUsername, priority, createdAt } = functionality;
 
+  // Simplified handleMove: just calls the passed onMove prop (which now opens the dialog)
   const handleMove = (newPriority: Priority) => {
     if (newPriority !== priority) {
-        // For now, prompt for justification. Later, this could open the confirmation dialog.
-        const moveJustification = prompt(`Moving "${text}" from ${priorityLabels[priority]} to ${priorityLabels[newPriority]}. Please provide a reason:`);
-        if (moveJustification !== null) { // Check if user cancelled prompt
-             onMove(newPriority, moveJustification || 'No justification provided.');
-        }
+        onMove(newPriority); // No justification prompt here
     }
   };
 
@@ -49,13 +46,14 @@ export default function FunctionalityCard({ functionality, onMove }: Functionali
   }) || 'Date unavailable';
 
   return (
-    <Card className={`mb-4 shadow-md ${categoryClasses[priority]}`}>
+    <Card className={`shadow-md border ${categoryClasses[priority]}`}> {/* Add border back for visual separation */}
       <CardHeader className="pb-2 pt-4 px-4">
         <div className="flex justify-between items-start">
-           <CardTitle className="text-base font-semibold leading-tight break-words">{text}</CardTitle>
+           <CardTitle className="text-base font-semibold leading-tight break-words mr-2">{text}</CardTitle> {/* Add margin-right */}
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-6 w-6 flex-shrink-0 text-current">
+                    {/* Make button slightly smaller and ensure it doesn't shrink */}
+                    <Button variant="ghost" size="icon" className="h-7 w-7 flex-shrink-0 text-current rounded-full -mr-2 -mt-1">
                         <MoreVertical className="h-4 w-4" />
                         <span className="sr-only">More options</span>
                     </Button>
@@ -65,7 +63,7 @@ export default function FunctionalityCard({ functionality, onMove }: Functionali
                     <DropdownMenuSeparator />
                     {(Object.keys(priorityLabels) as Priority[]).map((p) => (
                     p !== priority && (
-                        <DropdownMenuItem key={p} onClick={() => handleMove(p)}>
+                        <DropdownMenuItem key={p} onClick={() => handleMove(p)} className="cursor-pointer">
                          {priorityLabels[p]}
                         </DropdownMenuItem>
                     )
@@ -76,7 +74,7 @@ export default function FunctionalityCard({ functionality, onMove }: Functionali
 
       </CardHeader>
       <CardContent className="px-4 py-2">
-        <CardDescription className="text-sm break-words flex items-start gap-1.5">
+        <CardDescription className="text-sm break-words flex items-start gap-1.5 text-current/80"> {/* Slightly muted description */}
              <MessageSquareText className="h-4 w-4 mt-0.5 flex-shrink-0" />
              <span>{justification}</span>
         </CardDescription>
@@ -84,7 +82,7 @@ export default function FunctionalityCard({ functionality, onMove }: Functionali
       <CardFooter className="text-xs text-muted-foreground px-4 pb-3 pt-1 flex justify-between items-center">
         <div className="flex items-center gap-1">
            <User className="h-3 w-3" />
-           <span>{proposerUsername}</span>
+           <span>{proposerUsername || 'Unknown User'}</span> {/* Handle potential missing username */}
         </div>
         <time dateTime={createdAt?.toDate().toISOString()}>{formattedDate}</time>
       </CardFooter>

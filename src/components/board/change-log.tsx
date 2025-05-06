@@ -1,14 +1,13 @@
 // src/components/board/change-log.tsx
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { collection, query, orderBy, limit, onSnapshot, Timestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-import { ChangeLogEntry, Priority } from './types';
+import React from 'react';
+import type { ChangeLogEntry, Priority } from './types';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ArrowRight, PlusCircle, Edit3 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { formatDistanceToNow } from 'date-fns'; // For relative time
+import { Badge } from '@/components/ui/badge'; // Import Badge
+import { ArrowRight, PlusCircle, Pencil } from 'lucide-react'; // Import icons
 
 const priorityLabels: Record<Priority, string> = {
   must: 'Must Have',
@@ -17,113 +16,124 @@ const priorityLabels: Record<Priority, string> = {
   wont: 'Won\'t Have',
 };
 
-function formatTimestamp(timestamp: Timestamp | null | undefined): string {
-  if (!timestamp) return 'Unknown date';
-  const date = timestamp.toDate();
-   return new Intl.DateTimeFormat('en-US', {
-    dateStyle: 'short', // e.g., 12/19/23
-    timeStyle: 'short', // e.g., 11:59 AM
-  }).format(date);
+// Helper function for consistent timestamp formatting
+function formatLogTimestamp(timestamp: any): string {
+  if (!timestamp?.toDate) {
+    return 'Invalid date'; // Handle cases where timestamp is not a Firestore Timestamp
+  }
+  try {
+    return formatDistanceToNow(timestamp.toDate(), { addSuffix: true });
+  } catch (e) {
+    console.error("Error formatting timestamp:", e);
+    return 'Error formatting date';
+  }
 }
 
-function getInitials(name: string): string {
-    return name
-        .split(' ')
-        .map(n => n[0])
-        .filter((_, i, arr) => i === 0 || i === arr.length - 1) // First and last initial
-        .join('')
-        .toUpperCase();
+// Helper to render the change description
+function renderChangeDescription(log: ChangeLogEntry) {
+  const cardTextShort = log.functionalityText.length > 30
+    ? `"${log.functionalityText.substring(0, 27)}..."`
+    : `"${log.functionalityText}"`;
+
+  switch (log.changeType) {
+    case 'created':
+      return (
+        <>
+          <PlusCircle className="h-4 w-4 text-green-600 mr-1.5 flex-shrink-0" />
+          <span className="font-medium mr-1">{log.username}</span> created {cardTextShort} in
+          <Badge variant="secondary" className={`ml-1.5 priority-badge-${log.toPriority}`}>
+            {priorityLabels[log.toPriority!]}
+          </Badge>
+          .
+        </>
+      );
+    case 'moved':
+      return (
+        <>
+          <ArrowRight className="h-4 w-4 text-blue-600 mr-1.5 flex-shrink-0" />
+          <span className="font-medium mr-1">{log.username}</span> moved {cardTextShort} from
+          <Badge variant="secondary" className={`mx-1.5 priority-badge-${log.fromPriority}`}>
+            {priorityLabels[log.fromPriority!]}
+          </Badge>
+          to
+          <Badge variant="secondary" className={`ml-1.5 priority-badge-${log.toPriority}`}>
+            {priorityLabels[log.toPriority!]}
+          </Badge>
+          .
+          {log.justification && (
+            <p className="text-xs text-muted-foreground mt-1 ml-6 italic">
+              Reason: {log.justification}
+            </p>
+          )}
+        </>
+      );
+    case 'edited': // Assuming an 'edited' type might exist later
+       return (
+        <>
+          <Pencil className="h-4 w-4 text-orange-600 mr-1.5 flex-shrink-0" />
+          <span className="font-medium mr-1">{log.username}</span> edited {cardTextShort}.
+          {log.justification && (
+             <p className="text-xs text-muted-foreground mt-1 ml-6 italic">
+               Details: {log.justification}
+            </p>
+           )}
+         </>
+       );
+    default:
+      return `Unknown change by ${log.username} on ${cardTextShort}`;
+  }
 }
 
+// Define props for the component
+interface ChangeLogProps {
+  logs: ChangeLogEntry[];
+  loading: boolean; // Add loading prop
+}
 
-export default function ChangeLog() {
-  const [logs, setLogs] = useState<ChangeLogEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    setLoading(true);
-    const q = query(collection(db, 'changeLog'), orderBy('timestamp', 'desc'), limit(50)); // Limit to last 50 changes
-
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const fetchedLogs: ChangeLogEntry[] = [];
-      querySnapshot.forEach((doc) => {
-        fetchedLogs.push({ id: doc.id, ...doc.data() } as ChangeLogEntry);
-      });
-      setLogs(fetchedLogs);
-      setLoading(false);
-    }, (error) => {
-      console.error("Error fetching change log:", error);
-      setLoading(false);
-      // Handle error display if needed
-    });
-
-    return () => unsubscribe(); // Cleanup subscription on unmount
-  }, []);
-
-  const renderChangeDetails = (log: ChangeLogEntry) => {
-    switch (log.changeType) {
-      case 'created':
-        return (
-          <>
-            <PlusCircle className="h-4 w-4 text-green-600 mr-1" />
-            created "<span className="font-medium italic">{log.functionalityText}</span>" in {priorityLabels[log.toPriority!]}.
-            {log.justification && <span className="block text-xs text-muted-foreground pl-5 mt-0.5">Justification: {log.justification}</span>}
-          </>
-        );
-      case 'moved':
-        return (
-          <>
-             <ArrowRight className="h-4 w-4 text-blue-600 mr-1" />
-            moved "<span className="font-medium italic">{log.functionalityText}</span>" from {priorityLabels[log.fromPriority!]} <ArrowRight className="inline h-3 w-3 mx-0.5"/> {priorityLabels[log.toPriority!]}.
-            {log.justification && <span className="block text-xs text-muted-foreground pl-5 mt-0.5">Reason: {log.justification}</span>}
-          </>
-        );
-       case 'edited': // Basic edit log - can be expanded
-        return (
-          <>
-            <Edit3 className="h-4 w-4 text-orange-600 mr-1" />
-            edited "<span className="font-medium italic">{log.functionalityText}</span>".
-            {log.justification && <span className="block text-xs text-muted-foreground pl-5 mt-0.5">Details: {log.justification}</span>}
-          </>
-        );
-      default:
-        return 'made an unknown change.';
-    }
-  };
-
+export default function ChangeLog({ logs, loading }: ChangeLogProps) {
   return (
-    <Card className="h-[calc(100vh-theme(spacing.16))] flex flex-col"> {/* Adjust height as needed */}
-       <CardHeader className="p-4 border-b">
-         <CardTitle className="text-lg font-semibold">Change Log</CardTitle>
-       </CardHeader>
-       <ScrollArea className="flex-grow">
-         <CardContent className="p-0">
-            {loading && <p className="p-4 text-sm text-muted-foreground">Loading change history...</p>}
-            {!loading && logs.length === 0 && <p className="p-4 text-sm text-muted-foreground">No changes recorded yet.</p>}
-            <ul className="divide-y">
-                {logs.map((log) => (
-                <li key={log.id} className="p-3 hover:bg-muted/50">
-                    <div className="flex items-start space-x-3">
-                    <Avatar className="h-6 w-6 mt-1">
-                        {/* Placeholder for potential avatar image */}
-                        {/* <AvatarImage src="https://github.com/shadcn.png" alt={log.username} /> */}
-                        <AvatarFallback className="text-xs">{getInitials(log.username)}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 text-sm">
-                        <p>
-                            <span className="font-semibold">{log.username}</span>{' '}
-                            {renderChangeDetails(log)}
-                        </p>
-                        <time className="text-xs text-muted-foreground">
-                         {formatTimestamp(log.timestamp)}
-                        </time>
-                    </div>
-                    </div>
-                </li>
-                ))}
-            </ul>
-         </CardContent>
-       </ScrollArea>
-    </Card>
+    <ScrollArea className="flex-grow">
+      <div className="p-4 space-y-4">
+        {loading && ( // Display skeletons if loading
+          <>
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-14 w-full" />
+          </>
+        )}
+        {!loading && logs.length === 0 && ( // Display message if no logs and not loading
+          <p className="text-sm text-muted-foreground text-center py-6">
+            No changes recorded yet.
+          </p>
+        )}
+        {!loading && logs.map((log) => ( // Display logs if not loading
+          <div key={log.id} className="pb-3 border-b border-border last:border-b-0">
+            <div className="flex items-start text-sm text-foreground mb-1">
+                {renderChangeDescription(log)}
+            </div>
+            <p className="text-xs text-muted-foreground ml-6">
+                {formatLogTimestamp(log.timestamp)}
+            </p>
+          </div>
+        ))}
+      </div>
+    </ScrollArea>
   );
+}
+
+// Add some basic badge styling (optional, could be in globals.css)
+const badgeStyles = `
+.priority-badge-must { background-color: hsl(var(--moscow-must-bg)); color: hsl(var(--moscow-must-fg)); border-color: hsl(var(--moscow-must-border)); }
+.priority-badge-should { background-color: hsl(var(--moscow-should-bg)); color: hsl(var(--moscow-should-fg)); border-color: hsl(var(--moscow-should-border)); }
+.priority-badge-could { background-color: hsl(var(--moscow-could-bg)); color: hsl(var(--moscow-could-fg)); border-color: hsl(var(--moscow-could-border)); }
+.priority-badge-wont { background-color: hsl(var(--moscow-wont-bg)); color: hsl(var(--moscow-wont-fg)); border-color: hsl(var(--moscow-wont-border)); }
+`;
+
+// Inject styles (consider a better approach for larger apps)
+if (typeof window !== 'undefined') {
+  const styleSheet = document.createElement("style");
+  styleSheet.type = "text/css";
+  styleSheet.innerText = badgeStyles;
+  document.head.appendChild(styleSheet);
 }

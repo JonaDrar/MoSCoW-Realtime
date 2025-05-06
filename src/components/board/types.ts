@@ -20,12 +20,15 @@ export interface BoardColumnProps {
   priority: Priority;
   functionalities: Functionality[];
   onAddCard: (priority: Priority) => void;
-  onMoveCard: (cardId: string, currentPriority: Priority, newPriority: Priority, justification: string) => void;
+  // Updated: This function now just initiates the move process (e.g., opens a dialog)
+  // It doesn't need the justification string here anymore.
+  onMoveCard: (cardId: string, currentPriority: Priority, newPriority: Priority) => void;
 }
 
 export interface FunctionalityCardProps {
   functionality: Functionality;
-  onMove: (newPriority: Priority, justification: string) => void;
+  // Updated: onMove now only passes the new priority. Justification is handled elsewhere (dialog).
+  onMove: (newPriority: Priority) => void;
 }
 
 export interface AddFunctionalityDialogProps {
@@ -46,12 +49,12 @@ export interface MoveConfirmationDialogProps {
 
 // Add other types as needed, e.g., for change logs
 export interface ChangeLogEntry {
-  id: string;
+  id: string; // Firestore document ID
   functionalityId: string;
   functionalityText: string; // Store text for easier display
   userId: string;
   username: string;
-  timestamp: Timestamp;
+  timestamp: Timestamp; // Use Firestore Timestamp
   changeType: 'created' | 'moved' | 'edited'; // Add more types as needed
   fromPriority?: Priority;
   toPriority?: Priority;
