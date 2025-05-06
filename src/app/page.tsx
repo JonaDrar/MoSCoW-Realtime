@@ -13,6 +13,7 @@ import { Functionality, Priority, ChangeLogEntry } from '@/components/board/type
 import { Toaster } from '@/components/ui/toaster';
 import { Skeleton } from '@/components/ui/skeleton';
 import MoveConfirmationDialog from '@/components/board/move-confirmation-dialog';
+import MoSCowExplanationDialog from '@/components/board/moscow-explanation-dialog'; // Import the new component
 import { DragDropContext, DropResult, Droppable, Draggable } from 'react-beautiful-dnd';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile'; // Import useIsMobile
@@ -23,7 +24,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"; // Import Accordion components
 import { Button } from "@/components/ui/button"; // Import Button
-import { Plus } from "lucide-react"; // Import Plus icon
+import { Plus, Info } from "lucide-react"; // Import Plus and Info icons
 import FunctionalityCard from "@/components/board/functionality-card"; // Import FunctionalityCard
 import { cn } from "@/lib/utils"; // Import cn utility
 import { ScrollArea } from "@/components/ui/scroll-area"; // Import ScrollArea
@@ -88,6 +89,7 @@ export default function Home() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [initialDialogPriority, setInitialDialogPriority] = useState<Priority>('must');
   const [isMoveDialogOpen, setIsMoveDialogOpen] = useState(false);
+  const [isExplanationOpen, setIsExplanationOpen] = useState(false); // State for explanation dialog
   const [isClient, setIsClient] = useState(false);
   const [moveToConfirm, setMoveToConfirm] = useState<{ cardId: string; currentPriority: Priority; newPriority: Priority; cardText: string} | null>(null);
   const [changeLog, setChangeLog] = useState<ChangeLogEntry[]>([]);
@@ -203,7 +205,7 @@ export default function Home() {
         username: username,
         changeType: 'created' as 'created',
         toPriority: priority,
-        justification: justification,
+        justification: justification, // Include justification in log
     };
      const logRef = doc(collection(db, 'changeLog'));
      batch.set(logRef, { ...logData, timestamp: serverTimestamp() });
@@ -270,7 +272,7 @@ export default function Home() {
         changeType: 'moved' as 'moved',
         fromPriority: currentPriority,
         toPriority: newPriority,
-        justification: justification,
+        justification: justification, // Include justification in log
     };
      const logRef = doc(collection(db, 'changeLog'));
      batch.set(logRef, { ...logData, timestamp: serverTimestamp() });
@@ -385,11 +387,14 @@ export default function Home() {
                     {priorities.map((priority) => (
                         <AccordionItem value={priority} key={priority} className="border bg-card rounded-md shadow-sm">
                             <AccordionTrigger className={cn("flex justify-between items-center p-4 font-semibold text-sm hover:no-underline", columnTriggerStyles[priority])}>
-                                <span>{priorityLabels[priority]} ({functionalities.filter(f => f.priority === priority).length})</span>
-                                <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleOpenAddDialog(priority); }} className="h-7 w-7 text-accent hover:text-accent-foreground hover:bg-accent/10 rounded-full -mr-2">
-                                    <Plus className="h-4 w-4" />
-                                    <span className="sr-only">Add to {priorityLabels[priority]}</span>
-                                </Button>
+                                <div className="flex justify-between items-center w-full">
+                                   <span>{priorityLabels[priority]} ({functionalities.filter(f => f.priority === priority).length})</span>
+                                    <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); handleOpenAddDialog(priority); }} className="h-7 w-7 text-accent hover:text-accent-foreground hover:bg-accent/10 rounded-full -mr-2">
+                                        <Plus className="h-4 w-4" />
+                                        <span className="sr-only">Add to {priorityLabels[priority]}</span>
+                                    </Button>
+                                </div>
+
                             </AccordionTrigger>
                              <AccordionContent className="border-t">
                                 {/* Droppable area inside accordion */}
@@ -457,11 +462,23 @@ export default function Home() {
       {/* Main content area */}
        <main className="flex-1 flex flex-col p-0 md:p-6 lg:p-8 overflow-hidden"> {/* Remove padding on mobile */}
          {/* Header */}
-         <header className="mb-0 md:mb-6 p-4 md:p-0 flex-shrink-0"> {/* Add padding for mobile header */}
-             <h1 className="text-3xl md:text-4xl font-bold text-gradient">MoSCoW Realtime</h1>
-             {user && username && (
-               <p className="text-muted-foreground mt-1 text-sm md:text-base">Welcome, {username}! Prioritize features collaboratively.</p>
-             )}
+         <header className="mb-0 md:mb-6 p-4 md:p-0 flex-shrink-0 flex justify-between items-center"> {/* Added flex justify-between */}
+            <div>
+               <h1 className="text-3xl md:text-4xl font-bold text-gradient">MoSCoW Realtime</h1>
+               {user && username && (
+                 <p className="text-muted-foreground mt-1 text-sm md:text-base">Welcome, {username}! Prioritize features collaboratively.</p>
+               )}
+            </div>
+            {/* Add MoSCoW Explanation Button */}
+            <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsExplanationOpen(true)}
+                className="ml-4"
+            >
+                <Info className="h-4 w-4 mr-2" />
+                What is MoSCoW?
+            </Button>
          </header>
 
          {/* Show UserRegistration if not logged in and not loading */}
@@ -509,8 +526,12 @@ export default function Home() {
         newPriority={moveToConfirm?.newPriority || 'must'}
       />
 
+       <MoSCowExplanationDialog
+         isOpen={isExplanationOpen}
+         onClose={() => setIsExplanationOpen(false)}
+       />
+
       <Toaster />
     </div>
   );
 }
-
