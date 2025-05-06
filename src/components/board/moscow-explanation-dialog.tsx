@@ -46,28 +46,28 @@ export default function MoSCowExplanationDialog({ isOpen, onClose }: MoSCowExpla
                 <Badge variant="secondary" className="mr-2 priority-badge-must !text-[hsl(var(--moscow-must-fg))] !bg-transparent !border-[hsl(var(--moscow-must-fg))]">M</Badge> {t('mustTitle')}
                 </h3>
                 {/* Use dangerouslySetInnerHTML for HTML in translations */}
-                <p className="text-sm" dangerouslySetInnerHTML={{ __html: t('mustDescription') }} />
+                <p className="text-sm" dangerouslySetInnerHTML={{ __html: t.raw('mustDescription') }} />
             </div>
 
             <div className="p-4 rounded-md border border-[hsl(var(--moscow-should-border))] bg-[hsl(var(--moscow-should-bg))] text-[hsl(var(--moscow-should-fg))]">
                 <h3 className="font-semibold mb-1 flex items-center">
                 <Badge variant="secondary" className="mr-2 priority-badge-should !text-[hsl(var(--moscow-should-fg))] !bg-transparent !border-[hsl(var(--moscow-should-fg))]">S</Badge> {t('shouldTitle')}
                 </h3>
-                <p className="text-sm" dangerouslySetInnerHTML={{ __html: t('shouldDescription') }} />
+                <p className="text-sm" dangerouslySetInnerHTML={{ __html: t.raw('shouldDescription') }} />
             </div>
 
             <div className="p-4 rounded-md border border-[hsl(var(--moscow-could-border))] bg-[hsl(var(--moscow-could-bg))] text-[hsl(var(--moscow-could-fg))]">
                 <h3 className="font-semibold mb-1 flex items-center">
                 <Badge variant="secondary" className="mr-2 priority-badge-could !text-[hsl(var(--moscow-could-fg))] !bg-transparent !border-[hsl(var(--moscow-could-fg))]">C</Badge> {t('couldTitle')}
                 </h3>
-                <p className="text-sm" dangerouslySetInnerHTML={{ __html: t('couldDescription') }} />
+                <p className="text-sm" dangerouslySetInnerHTML={{ __html: t.raw('couldDescription') }} />
             </div>
 
             <div className="p-4 rounded-md border border-[hsl(var(--moscow-wont-border))] bg-[hsl(var(--moscow-wont-bg))] text-[hsl(var(--moscow-wont-fg))]">
                 <h3 className="font-semibold mb-1 flex items-center">
                 <Badge variant="secondary" className="mr-2 priority-badge-wont !text-[hsl(var(--moscow-wont-fg))] !bg-transparent !border-[hsl(var(--moscow-wont-fg))]">W</Badge> {t('wontTitle')}
                 </h3>
-                <p className="text-sm" dangerouslySetInnerHTML={{ __html: t('wontDescription') }} />
+                <p className="text-sm" dangerouslySetInnerHTML={{ __html: t.raw('wontDescription') }} />
             </div>
 
             <p className="text-sm text-muted-foreground pt-2">
