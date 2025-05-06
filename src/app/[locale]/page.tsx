@@ -477,7 +477,7 @@ export default function Home() {
     )}>
       {!isClient ? (
            // Minimal server-side render or initial loading state
-           <div className="flex justify-center items-center min-h-screen bg-primary-gradient p-4">
+           <div className="flex justify-center items-center min-h-screen bg-primary-gradient p-4 w-full">
                <div className="flex items-center text-primary-foreground">
                <Loader2 className="mr-2 h-6 w-6 animate-spin" />
                <span className="text-lg">{t('HomePage.loading')}</span>
