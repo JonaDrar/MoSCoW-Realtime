@@ -46,24 +46,25 @@ export default function AddFunctionalityDialog({ isOpen, onClose, onAdd, initial
 
   const handleAddClick = async () => {
     if (!text.trim()) {
-       toast({ title: 'Error', description: 'Functionality description cannot be empty.', variant: 'destructive' });
+       toast({ title: 'Validation Error', description: 'Functionality description cannot be empty.', variant: 'destructive' });
        return;
     }
      if (!justification.trim()) {
-       toast({ title: 'Error', description: 'Justification cannot be empty.', variant: 'destructive' });
+       toast({ title: 'Validation Error', description: 'Justification cannot be empty.', variant: 'destructive' });
        return;
     }
 
     setIsAdding(true);
     try {
+        // Directly call the passed onAdd function, which now handles its own try/catch and toasts
         await onAdd(text, justification, priority);
-        toast({ title: 'Success', description: 'Functionality added.' });
-        onClose(); // Close dialog on success
-    } catch (error: any) {
-         console.error("Error adding functionality:", error);
-         toast({ title: 'Error', description: error.message || 'Failed to add functionality.', variant: 'destructive' });
+        onClose(); // Close dialog on success (toast is handled in onAdd)
+    } catch (error) {
+         // The error is already logged and toasted in the parent component's onAdd function.
+         // We just need to ensure the loading state is reset.
+         console.error("Add functionality failed (handled in parent):", error);
     } finally {
-         setIsAdding(false);
+         setIsAdding(false); // Ensure loading state is always reset
     }
 
   };
@@ -133,7 +134,7 @@ export default function AddFunctionalityDialog({ isOpen, onClose, onAdd, initial
            <DialogClose asChild>
              <Button type="button" variant="outline" disabled={isAdding}>Cancel</Button>
            </DialogClose>
-          <Button type="button" onClick={handleAddClick} disabled={isAdding} className="bg-accent text-accent-foreground hover:bg-accent/90">
+          <Button type="button" onClick={handleAddClick} disabled={isAdding || !text.trim() || !justification.trim()} className="bg-accent text-accent-foreground hover:bg-accent/90">
             {isAdding ? 'Adding...' : 'Add Functionality'}
           </Button>
         </DialogFooter>

@@ -14,6 +14,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { Skeleton } from '@/components/ui/skeleton';
 import MoveConfirmationDialog from '@/components/board/move-confirmation-dialog';
 import { DragDropContext, DropResult, Droppable } from 'react-beautiful-dnd';
+import { useToast } from '@/hooks/use-toast'; // Import useToast
 
 const priorities: Priority[] = ['must', 'should', 'could', 'wont'];
 const priorityLabels: Record<Priority, string> = {
@@ -35,6 +36,7 @@ export default function Home() {
 
   const [changeLog, setChangeLog] = useState<ChangeLogEntry[]>([]);
   const [logLoading, setLogLoading] = useState(true); // Separate loading state for logs
+  const { toast } = useToast(); // Initialize useToast
 
 
   // Effect for user authentication state
@@ -65,7 +67,11 @@ export default function Home() {
     }, (error) => {
         console.error("Error fetching functionalities: ", error);
         setLoading(false); // Set loading false even if there's an error
-        // Handle error display to user if needed
+        toast({
+            title: 'Error Fetching Functionalities',
+            description: 'Could not load board items. Please try again later.',
+            variant: 'destructive',
+        });
     });
 
     return () => unsubscribe(); // Cleanup listener on unmount or user change
@@ -88,6 +94,11 @@ export default function Home() {
     }, (error) => {
         console.error("Error fetching change log: ", error);
         setLogLoading(false); // Ensure loading is false on error
+         toast({
+            title: 'Error Fetching Change Log',
+            description: 'Could not load activity feed. Please try again later.',
+            variant: 'destructive',
+        });
     });
 
     return () => unsubscribeLogs(); // Cleanup listener
@@ -95,14 +106,21 @@ export default function Home() {
 
 
    const logChange = async (details: Omit<ChangeLogEntry, 'id' | 'timestamp'>) => {
+    if (!user) return; // Should not happen if called correctly, but safeguard
     try {
       await addDoc(collection(db, 'changeLog'), {
         ...details,
         timestamp: serverTimestamp()
       });
+       console.log("Change logged successfully:", details.changeType); // Add console log for success
     } catch (error) {
       console.error("Error logging change:", error);
-      // Consider adding user feedback about logging failure
+      // Use toast for user feedback about logging failure
+      toast({
+        title: 'Logging Error',
+        description: `Could not record the ${details.changeType} action in the change log.`,
+        variant: 'destructive',
+      });
     }
   };
 
@@ -132,21 +150,41 @@ export default function Home() {
         updatedAt: serverTimestamp(),
      }
 
-      // Add the functionality
-      const docRef = await addDoc(collection(db, 'functionalities'), newFunctionalityData);
+     // Use a batch write to add the functionality and log atomically
+     const batch = writeBatch(db);
+     const functionalityRef = doc(collection(db, 'functionalities')); // Create ref for the new doc
+     batch.set(functionalityRef, newFunctionalityData);
 
-       // Log the creation after getting the ID
-       // Use the logChange function which adds to Firestore directly
-      await logChange({
-        functionalityId: docRef.id,
+     const logData: Omit<ChangeLogEntry, 'id' | 'timestamp'> = { // Use Omit here
+        functionalityId: functionalityRef.id, // Use the generated ID
         functionalityText: text,
         userId: user.uid,
         username: username,
-        changeType: 'created',
+        changeType: 'created' as 'created', // Ensure correct type
         toPriority: priority,
         justification: justification, // Log initial justification
-      });
+        // timestamp will be set by serverTimestamp in batch
+    };
+     const logRef = doc(collection(db, 'changeLog')); // Create ref for the log entry
+     batch.set(logRef, { ...logData, timestamp: serverTimestamp() }); // Add timestamp in batch
 
+     try {
+       await batch.commit(); // Commit the batch
+       console.log("Functionality added and change logged successfully.");
+       toast({
+          title: 'Functionality Added',
+          description: `"${text}" was added to ${priorityLabels[priority]}.`,
+       });
+     } catch (error) {
+         console.error("Error adding functionality or logging change:", error);
+         toast({
+            title: 'Action Failed',
+            description: 'Could not add the functionality or log the change. Please try again.',
+            variant: 'destructive',
+         });
+         // Rethrow or handle as needed if other parts of the app need to know about the failure
+         throw error;
+     }
   };
 
   // Renamed from onMoveCard in BoardColumn props, opens the confirmation dialog
@@ -182,16 +220,32 @@ export default function Home() {
         fromPriority: currentPriority,
         toPriority: newPriority,
         justification: justification,
-        // timestamp will be set by serverTimestamp in logChange or batch
+        // timestamp will be set by serverTimestamp in batch
     };
      const logRef = doc(collection(db, 'changeLog')); // Create ref for the log entry
      batch.set(logRef, { ...logData, timestamp: serverTimestamp() }); // Add timestamp in batch
 
 
-    await batch.commit(); // Commit the batch
-
-    setIsMoveDialogOpen(false); // Close dialog
-    setMoveToConfirm(null); // Reset move state
+    try {
+        await batch.commit(); // Commit the batch
+        console.log("Card moved and change logged successfully.");
+        toast({
+            title: 'Card Moved',
+            description: `"${cardText}" moved from ${priorityLabels[currentPriority]} to ${priorityLabels[newPriority]}.`,
+        });
+    } catch(error) {
+        console.error("Error moving card or logging change:", error);
+        toast({
+            title: 'Action Failed',
+            description: 'Could not move the card or log the change. Please try again.',
+            variant: 'destructive',
+        });
+        // Optionally rethrow or handle further if needed
+        throw error;
+    } finally {
+        setIsMoveDialogOpen(false); // Close dialog regardless of success/failure
+        setMoveToConfirm(null); // Reset move state
+    }
   };
 
   const onDragEnd = (result: DropResult) => {
@@ -215,6 +269,11 @@ export default function Home() {
         // The Firestore listener will update the state when the change is persisted.
     } else {
         console.error("Could not find dragged functionality with ID:", draggableId);
+        toast({
+            title: 'Drag Error',
+            description: 'Could not find the item you tried to move.',
+            variant: 'destructive',
+        });
     }
   };
 

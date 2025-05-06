@@ -40,26 +40,29 @@ export default function MoveConfirmationDialog({ isOpen, onClose, onConfirm, car
 
   const handleConfirmClick = async () => {
     if (!justification.trim()) {
-      toast({ title: 'Error', description: 'Justification is required to move the card.', variant: 'destructive' });
+      toast({ title: 'Validation Error', description: 'Justification is required to move the card.', variant: 'destructive' });
       return;
     }
 
     setIsMoving(true);
     try {
+        // Directly call the passed onConfirm function, which now handles its own try/catch and toasts
         await onConfirm(justification);
-        toast({ title: 'Success', description: 'Card moved successfully.' });
-        onClose(); // Close dialog on success
-    } catch (error: any) {
-         console.error("Error moving card:", error);
-         toast({ title: 'Error', description: error.message || 'Failed to move card.', variant: 'destructive' });
+        // No need for success toast here, it's handled in the parent's onConfirm
+        // onClose(); // Closing is handled in the parent's finally block now
+    } catch (error) {
+         // The error is already logged and toasted in the parent component's onConfirm function.
+         // We just need to ensure the loading state is reset.
+         console.error("Move card failed (handled in parent):", error);
     } finally {
-         setIsMoving(false);
+         setIsMoving(false); // Ensure loading state is always reset
+         // onClose is called in the parent's finally block to ensure dialog closes even on error
     }
   };
 
   // Handler for Dialog's onOpenChange
   const handleOpenChange = (open: boolean) => {
-    if (!open) {
+    if (!open && !isMoving) { // Prevent closing while moving
       onClose();
     }
   };
