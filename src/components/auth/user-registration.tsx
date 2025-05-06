@@ -10,15 +10,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { useTranslations } from 'next-intl'; // Import useTranslations
+import { useTranslations } from 'next-intl';
+import { Loader2, Users } from 'lucide-react'; // Import Loader2 and Users icon
 
 interface UserRegistrationProps {
   onUserRegistered: (user: User, username: string) => void;
 }
 
 export default function UserRegistration({ onUserRegistered }: UserRegistrationProps) {
-  const t = useTranslations('UserRegistration'); // Initialize translations hook for UserRegistration
-  const tHomePage = useTranslations('HomePage'); // Initialize separate translations hook for HomePage
+  const t = useTranslations('UserRegistration');
+  const tHomePage = useTranslations('HomePage');
   const [username, setUsername] = useState('');
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -35,7 +36,6 @@ export default function UserRegistration({ onUserRegistered }: UserRegistrationP
           setUsername(userData.username || '');
           onUserRegistered(currentUser, userData.username || '');
         } else {
-          // If user exists in auth but not in Firestore (e.g., manual deletion), sign them out.
           await auth.signOut();
           setUser(null);
         }
@@ -83,39 +83,59 @@ export default function UserRegistration({ onUserRegistered }: UserRegistrationP
   };
 
   if (loading) {
-    // Use the correct translation hook and key
-    return <div className="flex justify-center items-center h-screen">{tHomePage('loading')}</div>;
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-primary-gradient p-4">
+        <div className="flex items-center text-primary-foreground">
+          <Loader2 className="mr-2 h-6 w-6 animate-spin" />
+          <span className="text-lg">{tHomePage('loading')}</span>
+        </div>
+      </div>
+    );
   }
 
-  // If user is already authenticated (and found in Firestore), don't render the form
   if (user) {
     return null;
   }
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-background p-4">
-      <Card className="w-full max-w-md shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center text-gradient">{t('title')}</CardTitle>
-          <CardDescription className="text-center text-muted-foreground">{t('description')}</CardDescription>
+    <div className="flex justify-center items-center min-h-screen bg-primary-gradient p-4">
+      {/* Increased max-w, added padding, background blur backdrop */}
+      <Card className="w-full max-w-lg shadow-2xl rounded-xl overflow-hidden bg-card/90 backdrop-blur-sm border-border/20">
+        <CardHeader className="text-center p-6 sm:p-8">
+           {/* Added icon */}
+          <div className="mx-auto mb-4 p-3 rounded-full bg-primary/10 text-primary border border-primary/20 w-fit">
+            <Users className="h-8 w-8" />
+          </div>
+          {/* Larger title */}
+          <CardTitle className="text-3xl font-bold text-gradient">{t('title')}</CardTitle>
+          <CardDescription className="text-muted-foreground mt-2 text-base">{t('description')}</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6 p-6 sm:p-8">
           <div className="space-y-2">
-            <Label htmlFor="username">{t('usernameLabel')}</Label>
+            <Label htmlFor="username" className="text-sm font-medium">{t('usernameLabel')}</Label>
             <Input
               id="username"
               type="text"
               placeholder={t('usernamePlaceholder')}
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="focus:ring-accent"
+              className="h-12 text-base focus:ring-2 focus:ring-primary/50 transition-shadow duration-200 shadow-inner bg-background/80" // Larger input, subtle styling
               disabled={loading}
+              autoFocus
             />
           </div>
         </CardContent>
-        <CardFooter>
-          <Button onClick={handleRegister} className="w-full bg-primary-gradient text-primary-foreground hover:opacity-90" disabled={loading}>
-            {loading ? t('joiningButton') : t('joinButton')}
+        <CardFooter className="p-6 sm:p-8 bg-muted/30 border-t border-border/10">
+          {/* Larger button */}
+          <Button onClick={handleRegister} className="w-full h-12 text-lg bg-primary text-primary-foreground hover:bg-primary/90 transition duration-200" disabled={loading}>
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                {t('joiningButton')}
+              </>
+            ) : (
+              t('joinButton')
+            )}
           </Button>
         </CardFooter>
       </Card>
