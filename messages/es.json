@@ -1,0 +1,115 @@
+{
+  "App": {
+    "title": "MoSCoW en Tiempo Real",
+    "description": "Priorización colaborativa MoSCoW en tiempo real."
+  },
+  "UserRegistration": {
+    "title": "Únete a MoSCoW en Tiempo Real",
+    "description": "Ingresa un nombre de usuario para comenzar a colaborar.",
+    "usernameLabel": "Nombre de usuario",
+    "usernamePlaceholder": "Elige tu nombre de usuario",
+    "joinButton": "Unirse a la Sesión",
+    "joiningButton": "Uniéndose...",
+    "successToastTitle": "Éxito",
+    "successToastDescription": "¡Bienvenido/a, {username}!",
+    "errorToastTitle": "Fallo en el Registro",
+    "validationErrorTitle": "Error",
+    "validationErrorMessage": "Por favor, ingresa un nombre de usuario."
+  },
+  "HomePage": {
+    "welcomeMessage": "¡Bienvenido/a, {username}! Prioriza funcionalidades colaborativamente.",
+    "loading": "Cargando...",
+    "moscowExplanationButton": "¿Qué es MoSCoW?",
+    "addCardTooltip": "Añadir Funcionalidad a {title}",
+    "dropPlaceholder": "Suelta tarjetas aquí o haz clic en '+' para añadir.",
+    "dragErrorTitle": "Error al Arrastrar",
+    "dragErrorBoardItems": "Los elementos del tablero no están cargados. No se puede mover la tarjeta.",
+    "dragErrorFindItem": "No se pudo encontrar el elemento que intentaste mover.",
+    "reorderLog": "Reordenando dentro de la misma columna - no implementado completamente",
+    "fetchErrorTitle": "Error al Obtener Funcionalidades",
+    "fetchErrorDescription": "No se pudieron cargar los elementos del tablero. Por favor, inténtalo de nuevo más tarde.",
+    "logErrorTitle": "Error al Obtener Registro de Cambios",
+    "logErrorDescription": "No se pudo cargar el feed de actividad. Por favor, inténtalo de nuevo más tarde.",
+    "mobileAddCardTooltip": "Añadir a {title}"
+  },
+  "Priorities": {
+    "must": "Debe Tener",
+    "should": "Debería Tener",
+    "could": "Podría Tener",
+    "wont": "No Tendrá"
+  },
+  "AddFunctionalityDialog": {
+    "title": "Añadir Nueva Funcionalidad",
+    "description": "Describe la funcionalidad, proporciona una justificación y establece su prioridad inicial.",
+    "functionalityLabel": "Funcionalidad",
+    "functionalityPlaceholder": "Ej., Inicio de sesión de usuario por correo",
+    "justificationLabel": "Justificación",
+    "justificationPlaceholder": "¿Por qué es necesaria?",
+    "priorityLabel": "Prioridad",
+    "priorityPlaceholder": "Selecciona prioridad",
+    "addButton": "Añadir Funcionalidad",
+    "addingButton": "Añadiendo...",
+    "cancelButton": "Cancelar",
+    "validationErrorTitle": "Error de Validación",
+    "validationErrorFunctionality": "La descripción de la funcionalidad no puede estar vacía.",
+    "validationErrorJustification": "La justificación no puede estar vacía.",
+    "successToastTitle": "Funcionalidad Añadida",
+    "successToastDescription": "\"{text}\" se añadió a {priorityLabel}.",
+    "errorToastTitle": "Acción Fallida",
+    "errorToastDescription": "No se pudo añadir la funcionalidad o registrar el cambio. Por favor, inténtalo de nuevo."
+  },
+  "MoveConfirmationDialog": {
+    "title": "Confirmar Movimiento",
+    "description": "Estás moviendo la funcionalidad \"{cardText}\" de {currentPriorityLabel} a {newPriorityLabel}. Por favor, proporciona una justificación para este cambio.",
+    "justificationLabel": "Justificación",
+    "justificationPlaceholder": "Explica por qué se realiza este cambio...",
+    "confirmButton": "Confirmar Movimiento",
+    "movingButton": "Moviendo...",
+    "cancelButton": "Cancelar",
+    "validationErrorTitle": "Error de Validación",
+    "validationErrorMessage": "Se requiere justificación para mover la tarjeta.",
+    "successToastTitle": "Tarjeta Movida",
+    "successToastDescription": "\"{cardText}\" movida de {currentPriorityLabel} a {newPriorityLabel}.",
+    "errorToastTitle": "Acción Fallida",
+    "errorToastDescription": "No se pudo mover la tarjeta o registrar el cambio. Por favor, inténtalo de nuevo.",
+    "moveErrorTitle": "Error al Mover",
+    "moveErrorFindItem": "No se pudo encontrar el elemento a mover.",
+    "moveErrorMissingInfo": "No se puede completar el movimiento. Falta información requerida."
+  },
+  "FunctionalityCard": {
+    "moveToLabel": "Mover a",
+    "moreOptions": "Más opciones",
+    "dateUnavailable": "Fecha no disponible",
+    "unknownUser": "Usuario Desconocido"
+  },
+  "ChangeLog": {
+    "title": "Registro de Cambios",
+    "noLogs": "Aún no hay cambios registrados.",
+    "createdLog": "{username} creó \"{cardTextShort}\" en {toPriorityBadge}.",
+    "movedLog": "{username} movió \"{cardTextShort}\" de {fromPriorityBadge} a {toPriorityBadge}.",
+    "editedLog": "{username} editó \"{cardTextShort}\".",
+    "unknownLog": "{username} hizo un cambio desconocido a \"{cardTextShort}\".",
+    "reasonPrefix": "Razón:",
+    "detailsPrefix": "Detalles:",
+    "justificationPrefix": "Justificación:",
+    "invalidDate": "Fecha inválida",
+    "errorFormattingDate": "Error al formatear fecha"
+  },
+  "MoscowExplanationDialog": {
+    "title": "¿Qué es la Priorización MoSCoW?",
+    "description": "¡Imagina que estás haciendo una maleta para un viaje! MoSCoW ayuda a decidir qué es lo más importante llevar.",
+    "mustTitle": "Debe Tener",
+    "mustDescription": "Estas son las cosas realmente importantes que absolutamente <strong>debes</strong> llevar. Como tu pasaporte o el billete para un viaje en avión. ¡Sin esto, el viaje no puede ocurrir!<br/><em>Ejemplo: Para una app de dibujo, poder dibujar líneas.</em>",
+    "shouldTitle": "Debería Tener",
+    "shouldDescription": "Estas son cosas importantes que <strong>deberías</strong> llevar si puedes. Hacen el viaje mucho mejor, pero quizás podrías arreglártelas sin ellas. Como un cepillo de dientes o zapatos cómodos.<br/><em>Ejemplo: Para una app de dibujo, poder cambiar colores.</em>",
+    "couldTitle": "Podría Tener",
+    "couldDescription": "Estas son cosas agradables que <strong>podrías</strong> llevar si hay espacio y tiempo extra. No son esenciales pero añaden un poco de diversión extra. Como un libro o un snack especial.<br/><em>Ejemplo: Para una app de dibujo, añadir pinceles especiales con purpurina.</em>",
+    "wontTitle": "No Tendrá (Esta Vez)",
+    "wontDescription": "Estas son cosas que decides que <strong>no</strong> llevarás en este viaje. Quizás son demasiado pesadas, no necesarias, o las llevarás la próxima vez. Como llevar toda tu caja de juguetes.<br/><em>Ejemplo: Para una app de dibujo, quizás añadir modelado 3D ahora mismo.</em>",
+    "summary": "¡Usar MoSCoW ayuda a todos a ponerse de acuerdo sobre qué es lo más importante construir primero, igual que empacar lo esencial antes que los extras!",
+    "closeButton": "Cerrar"
+  },
+  "Common": {
+    "cancel": "Cancelar"
+  }
+}

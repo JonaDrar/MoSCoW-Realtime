@@ -1,0 +1,115 @@
+{
+  "App": {
+    "title": "MoSCoW Realtime",
+    "description": "Collaborative MoSCoW prioritization in real-time."
+  },
+  "UserRegistration": {
+    "title": "Join MoSCoW Realtime",
+    "description": "Enter a username to start collaborating.",
+    "usernameLabel": "Username",
+    "usernamePlaceholder": "Choose your username",
+    "joinButton": "Join Session",
+    "joiningButton": "Joining...",
+    "successToastTitle": "Success",
+    "successToastDescription": "Welcome, {username}!",
+    "errorToastTitle": "Registration Failed",
+    "validationErrorTitle": "Error",
+    "validationErrorMessage": "Please enter a username."
+  },
+  "HomePage": {
+    "welcomeMessage": "Welcome, {username}! Prioritize features collaboratively.",
+    "loading": "Loading...",
+    "moscowExplanationButton": "What is MoSCoW?",
+    "addCardTooltip": "Add Functionality to {title}",
+    "dropPlaceholder": "Drop cards here or click '+' to add.",
+    "dragErrorTitle": "Drag Error",
+    "dragErrorBoardItems": "Board items are not loaded. Cannot move card.",
+    "dragErrorFindItem": "Could not find the item you tried to move.",
+    "reorderLog": "Reordering within the same column - not fully implemented",
+    "fetchErrorTitle": "Error Fetching Functionalities",
+    "fetchErrorDescription": "Could not load board items. Please try again later.",
+    "logErrorTitle": "Error Fetching Change Log",
+    "logErrorDescription": "Could not load activity feed. Please try again later.",
+    "mobileAddCardTooltip": "Add to {title}"
+  },
+  "Priorities": {
+    "must": "Must Have",
+    "should": "Should Have",
+    "could": "Could Have",
+    "wont": "Won't Have"
+  },
+  "AddFunctionalityDialog": {
+    "title": "Add New Functionality",
+    "description": "Describe the functionality, provide justification, and set its initial priority.",
+    "functionalityLabel": "Functionality",
+    "functionalityPlaceholder": "e.g., User login via email",
+    "justificationLabel": "Justification",
+    "justificationPlaceholder": "Why is this needed?",
+    "priorityLabel": "Priority",
+    "priorityPlaceholder": "Select priority",
+    "addButton": "Add Functionality",
+    "addingButton": "Adding...",
+    "cancelButton": "Cancel",
+    "validationErrorTitle": "Validation Error",
+    "validationErrorFunctionality": "Functionality description cannot be empty.",
+    "validationErrorJustification": "Justification cannot be empty.",
+    "successToastTitle": "Functionality Added",
+    "successToastDescription": "\"{text}\" was added to {priorityLabel}.",
+    "errorToastTitle": "Action Failed",
+    "errorToastDescription": "Could not add the functionality or log the change. Please try again."
+  },
+  "MoveConfirmationDialog": {
+    "title": "Confirm Move",
+    "description": "You are moving the functionality \"{cardText}\" from {currentPriorityLabel} to {newPriorityLabel}. Please provide a justification for this change.",
+    "justificationLabel": "Justification",
+    "justificationPlaceholder": "Explain why this change is being made...",
+    "confirmButton": "Confirm Move",
+    "movingButton": "Moving...",
+    "cancelButton": "Cancel",
+    "validationErrorTitle": "Validation Error",
+    "validationErrorMessage": "Justification is required to move the card.",
+    "successToastTitle": "Card Moved",
+    "successToastDescription": "\"{cardText}\" moved from {currentPriorityLabel} to {newPriorityLabel}.",
+    "errorToastTitle": "Action Failed",
+    "errorToastDescription": "Could not move the card or log the change. Please try again.",
+    "moveErrorTitle": "Move Error",
+    "moveErrorFindItem": "Could not find the item to move.",
+    "moveErrorMissingInfo": "Cannot complete the move. Missing required information."
+  },
+  "FunctionalityCard": {
+    "moveToLabel": "Move to",
+    "moreOptions": "More options",
+    "dateUnavailable": "Date unavailable",
+    "unknownUser": "Unknown User"
+  },
+  "ChangeLog": {
+    "title": "Change Log",
+    "noLogs": "No changes recorded yet.",
+    "createdLog": "{username} created \"{cardTextShort}\" in {toPriorityBadge}.",
+    "movedLog": "{username} moved \"{cardTextShort}\" from {fromPriorityBadge} to {toPriorityBadge}.",
+    "editedLog": "{username} edited \"{cardTextShort}\".",
+    "unknownLog": "{username} made an unknown change to \"{cardTextShort}\".",
+    "reasonPrefix": "Reason:",
+    "detailsPrefix": "Details:",
+    "justificationPrefix": "Justification:",
+    "invalidDate": "Invalid date",
+    "errorFormattingDate": "Error formatting date"
+  },
+  "MoscowExplanationDialog": {
+    "title": "What is MoSCoW Prioritization?",
+    "description": "Imagine you're packing a bag for a trip! MoSCoW helps decide what's most important to bring.",
+    "mustTitle": "Must Have",
+    "mustDescription": "These are the really important things you absolutely <strong>must</strong> bring. Like your passport or ticket for a plane trip. Without these, the trip can't happen!<br/><em>Example: For a drawing app, being able to draw lines.</em>",
+    "shouldTitle": "Should Have",
+    "shouldDescription": "These are important things you <strong>should</strong> bring if you can. They make the trip much better, but you could maybe manage without them. Like a toothbrush or comfy shoes.<br/><em>Example: For a drawing app, being able to change colors.</em>",
+    "couldTitle": "Could Have",
+    "couldDescription": "These are nice things you <strong>could</strong> bring if there's extra space and time. They aren't essential but add a little extra fun. Like a book or a special snack.<br/><em>Example: For a drawing app, adding special glittery brushes.</em>",
+    "wontTitle": "Won't Have (This Time)",
+    "wontDescription": "These are things you decide you <strong>won't</strong> bring on this trip. Maybe they're too heavy, not needed, or you'll bring them next time. Like bringing your whole toy box.<br/><em>Example: For a drawing app, maybe adding 3D modeling right now.</em>",
+    "summary": "Using MoSCoW helps everyone agree on what's most important to build first, just like packing the essentials before the extras!",
+    "closeButton": "Close"
+  },
+  "Common": {
+    "cancel": "Cancel"
+  }
+}

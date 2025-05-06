@@ -10,12 +10,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { useTranslations } from 'next-intl'; // Import useTranslations
 
 interface UserRegistrationProps {
   onUserRegistered: (user: User, username: string) => void;
 }
 
 export default function UserRegistration({ onUserRegistered }: UserRegistrationProps) {
+  const t = useTranslations('UserRegistration'); // Initialize translations hook
   const [username, setUsername] = useState('');
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,7 +34,6 @@ export default function UserRegistration({ onUserRegistered }: UserRegistrationP
           setUsername(userData.username || '');
           onUserRegistered(currentUser, userData.username || '');
         } else {
-          // User exists in auth but not in Firestore (e.g., deleted account), sign them out
           await auth.signOut();
           setUser(null);
         }
@@ -47,8 +48,8 @@ export default function UserRegistration({ onUserRegistered }: UserRegistrationP
   const handleRegister = async () => {
     if (!username.trim()) {
       toast({
-        title: 'Error',
-        description: 'Please enter a username.',
+        title: t('validationErrorTitle'),
+        description: t('validationErrorMessage'),
         variant: 'destructive',
       });
       return;
@@ -64,13 +65,13 @@ export default function UserRegistration({ onUserRegistered }: UserRegistrationP
       setUser(newUser);
       onUserRegistered(newUser, username.trim());
       toast({
-        title: 'Success',
-        description: `Welcome, ${username.trim()}!`,
+        title: t('successToastTitle'),
+        description: t('successToastDescription', { username: username.trim() }),
       });
     } catch (error: any) {
       console.error("Error signing in anonymously:", error);
       toast({
-        title: 'Registration Failed',
+        title: t('errorToastTitle'),
         description: error.message || 'Could not register user.',
         variant: 'destructive',
       });
@@ -80,27 +81,28 @@ export default function UserRegistration({ onUserRegistered }: UserRegistrationP
   };
 
   if (loading) {
-    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+    // Consider using a Skeleton or a more specific loading indicator
+    return <div className="flex justify-center items-center h-screen">{t('HomePage.loading')}</div>;
   }
 
   if (user) {
-    return null; // Don't render anything if user is already registered and loaded
+    return null;
   }
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-background p-4">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center text-gradient">Join MoSCoW Realtime</CardTitle>
-          <CardDescription className="text-center text-muted-foreground">Enter a username to start collaborating.</CardDescription>
+          <CardTitle className="text-2xl font-bold text-center text-gradient">{t('title')}</CardTitle>
+          <CardDescription className="text-center text-muted-foreground">{t('description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
+            <Label htmlFor="username">{t('usernameLabel')}</Label>
             <Input
               id="username"
               type="text"
-              placeholder="Choose your username"
+              placeholder={t('usernamePlaceholder')}
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="focus:ring-accent"
@@ -110,7 +112,7 @@ export default function UserRegistration({ onUserRegistered }: UserRegistrationP
         </CardContent>
         <CardFooter>
           <Button onClick={handleRegister} className="w-full bg-primary-gradient text-primary-foreground hover:opacity-90" disabled={loading}>
-            {loading ? 'Joining...' : 'Join Session'}
+            {loading ? t('joiningButton') : t('joinButton')}
           </Button>
         </CardFooter>
       </Card>
