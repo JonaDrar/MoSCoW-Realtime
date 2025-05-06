@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import '../globals.css'; // Adjusted path relative to [locale] folder
 import { cn } from '@/lib/utils';
 import { NextIntlClientProvider, useMessages } from 'next-intl';
-import { locales } from '@/i18n'; // Import locales from i18n config
+import { locales } from '@/i18n/request'; // Import locales from i18n config
 import {unstable_setRequestLocale} from 'next-intl/server';
 import { ThemeProvider } from "@/components/theme-provider"; // Import ThemeProvider
 
