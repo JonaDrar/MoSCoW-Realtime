@@ -87,8 +87,8 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
         messageElement = t.rich('createdLog', components);
         return (
           <>
-            <PlusCircle className="h-4 w-4 text-green-600 mr-1.5 flex-shrink-0" />
-            <span className="flex-1">{messageElement}</span> {/* Removed trailing dot */}
+            <PlusCircle className="h-4 w-4 text-green-600 mr-1.5 flex-shrink-0 mt-0.5" /> {/* Added mt-0.5 for alignment */}
+            <div className="flex-1">{messageElement}</div> {/* Render directly in a div */}
             {justificationText}
           </>
         );
@@ -97,8 +97,8 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
          messageElement = t.rich('movedLog', components);
         return (
             <>
-              <ArrowRight className="h-4 w-4 text-blue-600 mr-1.5 flex-shrink-0" />
-               <span className="flex-1">{messageElement}</span> {/* Removed trailing dot */}
+              <ArrowRight className="h-4 w-4 text-blue-600 mr-1.5 flex-shrink-0 mt-0.5" /> {/* Added mt-0.5 for alignment */}
+               <div className="flex-1">{messageElement}</div> {/* Render directly in a div */}
                {justificationText}
             </>
           );
@@ -107,8 +107,8 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
          messageElement = t.rich('editedLog', components);
         return (
             <>
-              <Pencil className="h-4 w-4 text-orange-600 mr-1.5 flex-shrink-0" />
-              <span className="flex-1">{messageElement}</span> {/* Removed trailing dot */}
+              <Pencil className="h-4 w-4 text-orange-600 mr-1.5 flex-shrink-0 mt-0.5" /> {/* Added mt-0.5 for alignment */}
+              <div className="flex-1">{messageElement}</div> {/* Render directly in a div */}
               {log.justification && (
                  <p className="text-xs text-foreground/80 mt-1 ml-6 w-full">
                    {t('detailsPrefix')} {log.justification}
@@ -121,8 +121,8 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
         messageElement = t.rich('unknownLog', components);
         return (
            <>
-              {/* Optional: Add an icon for unknown changes */}
-              <span className="flex-1">{messageElement}</span> {/* Removed trailing dot */}
+             {/* Optional: Add an icon for unknown changes. Adding mt-0.5 */}
+              <div className="flex-1 mt-0.5">{messageElement}</div> {/* Render directly in a div */}
               {log.justification && (
                 <p className="text-xs text-foreground/80 mt-1 ml-6 w-full">
                   {t('justificationPrefix')} {log.justification}
@@ -152,7 +152,8 @@ export default function ChangeLog({ logs, loading }: ChangeLogProps) {
         )}
         {!loading && logs.map((log) => (
           <div key={log.id} className="pb-3 border-b border-border last:border-b-0">
-            <div className="flex items-start text-sm text-foreground mb-1 flex-wrap">
+            {/* Ensure parent takes full width for flex-1 to work */}
+            <div className="flex items-start text-sm text-foreground mb-1 flex-wrap w-full">
                 {renderChangeDescription(log)}
             </div>
             <p className="text-xs text-muted-foreground ml-6">
