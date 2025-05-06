@@ -1,6 +1,7 @@
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
+  reactStrictMode: false, // Disable Strict Mode to prevent potential issues with react-beautiful-dnd
   /* config options here */
   typescript: {
     ignoreBuildErrors: true,

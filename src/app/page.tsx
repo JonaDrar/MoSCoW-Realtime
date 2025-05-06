@@ -71,7 +71,7 @@ export default function Home() {
       querySnapshot.forEach((doc) => {
         fetchedFunctionalities.push({ id: doc.id, ...doc.data() } as Functionality);
       });
-      console.log('Firestore updated functionalities:', fetchedFunctionalities); // Add log
+      // console.log('Firestore updated functionalities:', fetchedFunctionalities); // Add log
       setFunctionalities(fetchedFunctionalities);
       setLoading(false); // Set loading false after successful fetch
     }, (error) => {
@@ -105,7 +105,7 @@ export default function Home() {
           console.warn(`Log entry ${doc.id} is missing timestamp.`);
         }
       });
-      console.log('Firestore updated change log:', fetchedLogs); // Add log
+      // console.log('Firestore updated change log:', fetchedLogs); // Add log
       setChangeLog(fetchedLogs);
       setLogLoading(false);
     }, (error) => {
@@ -129,7 +129,7 @@ export default function Home() {
         ...details,
         timestamp: serverTimestamp()
       });
-       console.log("Change logged successfully:", details.changeType); // Add console log for success
+       // console.log("Change logged successfully:", details.changeType); // Add console log for success
     } catch (error) {
       console.error("Error logging change:", error);
       // Use toast for user feedback about logging failure
@@ -216,7 +216,7 @@ export default function Home() {
            });
            return;
       }
-      console.log(`Initiating move for card ${cardId} ("${card.text}") from ${currentPriority} to ${newPriority}`);
+      // console.log(`Initiating move for card ${cardId} ("${card.text}") from ${currentPriority} to ${newPriority}`);
       setMoveToConfirm({ cardId, currentPriority, newPriority, cardText: card.text });
       setIsMoveDialogOpen(true);
   };
@@ -290,11 +290,11 @@ export default function Home() {
 
   const onDragEnd = (result: DropResult) => {
     const { source, destination, draggableId } = result;
-    console.log("Drag ended:", { source, destination, draggableId }); // Log the entire result object
+    // console.log("Drag ended:", { source, destination, draggableId }); // Log the entire result object
 
     // If dropped outside a droppable area, do nothing
     if (!destination) {
-      console.log("Dropped outside droppable area. No action taken.");
+      // console.log("Dropped outside droppable area. No action taken.");
       return;
     }
 
@@ -302,17 +302,17 @@ export default function Home() {
     const destinationPriority = destination.droppableId as Priority;
 
     // Log the priorities
-    console.log(`Source Priority: ${sourcePriority}, Destination Priority: ${destinationPriority}`);
+    // console.log(`Source Priority: ${sourcePriority}, Destination Priority: ${destinationPriority}`);
 
     // If dropped in the same column (even if index changed), do nothing for now
     // Reordering within a column can be implemented separately if needed
     if (source.droppableId === destination.droppableId) {
-      console.log("Dropped in the same column. No action taken.");
+      // console.log("Dropped in the same column. No action taken.");
       return;
     }
 
     // If dropped in a different column, attempt to find the card and initiate move
-    console.log(`Attempting to move card with ID: ${draggableId} from ${sourcePriority} to ${destinationPriority}`);
+    // console.log(`Attempting to move card with ID: ${draggableId} from ${sourcePriority} to ${destinationPriority}`);
 
     // Explicitly check if functionalities array is populated
     if (!functionalities || functionalities.length === 0) {
@@ -328,7 +328,7 @@ export default function Home() {
     const movedFunctionality = functionalities.find(f => f.id === draggableId);
 
     if (movedFunctionality) {
-        console.log(`Found functionality to move: ID=${draggableId}, Text="${movedFunctionality.text}". Calling handleInitiateMove.`);
+        // console.log(`Found functionality to move: ID=${draggableId}, Text="${movedFunctionality.text}". Calling handleInitiateMove.`);
         // Call the function to open the confirmation dialog
         handleInitiateMove(draggableId, sourcePriority, destinationPriority);
         // Note: We intentionally DON'T update local state immediately.

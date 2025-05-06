@@ -26,27 +26,30 @@ interface DragItemProps {
   onInitiateMove: (cardId: string, currentPriority: Priority, newPriority: Priority) => void;
 }
 
+// Using React.memo for performance optimization in lists
 const DragItem = React.memo(({ functionality, index, onInitiateMove }: DragItemProps) => {
   return (
     <Draggable draggableId={functionality.id} index={index}>
       {(provided, snapshot) => {
+        // console.log(`Draggable ${functionality.id}: isDragging=${snapshot.isDragging}`); // Optional: Log dragging state
         return (
           <div
             ref={provided.innerRef}
             {...provided.draggableProps}
-            {...provided.dragHandleProps} // These props make this div the drag handle
+            {...provided.dragHandleProps} // Ensure drag handle is applied to this div
             className={cn(
-                'mb-4 transition-shadow duration-200', // Removed select-none
-                 snapshot.isDragging ? 'shadow-xl ring-2 ring-ring' : ''
+                'mb-4 transition-shadow duration-200 outline-none focus:outline-none', // Ensure no outline interferes, explicit focus removal
+                 snapshot.isDragging ? 'shadow-xl ring-2 ring-ring' : 'shadow-md' // Apply shadow normally, enhance on drag
             )}
              style={{
-              ...provided.draggableProps.style, // Ensure react-beautiful-dnd styles are applied
+              ...provided.draggableProps.style, // Apply styles from react-beautiful-dnd
+              // userSelect: 'none', // Force prevent text selection if needed, but dragHandleProps should suffice
             }}
+            // onClick={(e) => e.stopPropagation()} // Prevent clicks bubbling up if necessary
           >
             <FunctionalityCard
               functionality={functionality}
               // Pass onInitiateMove down to the card for menu actions
-              // This 'onMove' prop on FunctionalityCard calls the 'onInitiateMove' passed to DragItem
               onMove={(newPriority) => onInitiateMove(functionality.id, functionality.priority, newPriority)}
             />
           </div>
@@ -73,15 +76,16 @@ export default function BoardColumn({ title, priority, functionalities, onAddCar
        </CardHeader>
 
        {/* Droppable Area */}
-       {/* Explicitly set isDropDisabled, isCombineEnabled, and ignoreContainerClipping to false to satisfy invariant checks */}
+       {/* Explicitly set boolean props for react-beautiful-dnd */}
        <Droppable
             droppableId={priority}
             type="FUNCTIONALITY"
             isDropDisabled={false}
             isCombineEnabled={false}
-            ignoreContainerClipping={false} // Ensure all required props are boolean
+            ignoreContainerClipping={false}
         >
          {(provided, snapshot) => {
+            // console.log(`Droppable ${priority}: isDraggingOver=${snapshot.isDraggingOver}`); // Optional: Log droppable state
            return (
              <ScrollArea
                className="flex-grow"
