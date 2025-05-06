@@ -9,6 +9,7 @@ import FunctionalityCard from './functionality-card';
 import { BoardColumnProps, Functionality, Priority } from './types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Draggable, Droppable } from 'react-beautiful-dnd';
+import { cn } from '@/lib/utils'; // Import cn utility
 
 
 const columnStyles: Record<Priority, string> = {
@@ -33,8 +34,11 @@ const DragItem = React.memo(({ functionality, index, onInitiateMove }: DragItemP
           <div
             ref={provided.innerRef}
             {...provided.draggableProps}
-            {...provided.dragHandleProps}
-            className={`mb-4 transition-shadow duration-200 ${snapshot.isDragging ? 'shadow-xl ring-2 ring-ring' : ''}`} // Add spacing and dragging visual feedback
+            {...provided.dragHandleProps} // These props make this div the drag handle
+            className={cn(
+                'mb-4 transition-shadow duration-200 select-none', // Added select-none
+                 snapshot.isDragging ? 'shadow-xl ring-2 ring-ring' : ''
+            )}
              style={{
               ...provided.draggableProps.style, // Ensure react-beautiful-dnd styles are applied
             }}
